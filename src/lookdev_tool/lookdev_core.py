@@ -5,7 +5,7 @@ import logging
 
 from maya import cmds
 
-from LookDevTool_Module import constants
+from lookdev_tool import constants
 
 CORE_LOGGER = logging.getLogger(__name__)
 CORE_LOGGER.setLevel(10)

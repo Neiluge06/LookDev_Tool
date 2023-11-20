@@ -4,10 +4,10 @@ from functools import partial
 
 from PySide2 import QtCore, QtWidgets, QtGui
 
-from LookDevTool_Module import lookdev_core
-from LookDevTool_Module.Utils import openMaya_utils
-from LookDevTool_Module.Utils import widgets
-from LookDevTool_Module import constants
+from lookdev_tool import lookdev_core
+from lookdev_tool.Utils import openMaya_utils
+from lookdev_tool.Utils import widgets
+from lookdev_tool import constants
 
 
 class MainUi(QtWidgets.QDialog):
