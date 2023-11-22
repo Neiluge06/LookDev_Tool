@@ -1,9 +1,10 @@
 from maya import cmds
 import json
-from functools import partial
 
 from PySide2 import QtCore, QtWidgets, QtGui
 
+from lookdev_tool import vray_core
+from lookdev_tool import arnold_core
 from lookdev_tool import lookdev_core
 from lookdev_tool.Utils import openMaya_utils
 from lookdev_tool.Utils import widgets
@@ -17,10 +18,9 @@ class MainUi(QtWidgets.QDialog):
     def __init__(self):
 
         super(MainUi, self).__init__(parent=openMaya_utils.maya_main_window(QtWidgets.QDialog))
-
         self.colorList = []
-
         self._buildUi()
+        self.setRenderEngine()
         self.createComboBox()
         self._connectUi()
         self.resize(500, 240)
@@ -28,11 +28,53 @@ class MainUi(QtWidgets.QDialog):
 
         self.setWindowTitle(constants.TOOL_NAME)
 
-        self.groundClass = lookdev_core.GroundClass()
-        self.lightDomeClass = lookdev_core.LightDome()
-
     def _buildUi(self):
-         # Labels
+
+        # Buttons
+        self.setDirectoryButton = QtWidgets.QPushButton('Find tool folder')
+        self.setDirectoryButton.setIcon(QtGui.QIcon('icons:Folder.png'))
+        self.createCamButton = QtWidgets.QPushButton('Create Camera')
+        self.createCamButton.setFixedSize(150, 25)
+        self.createLightButton = QtWidgets.QPushButton('Create three points light')
+        self.createLightButton.setFixedSize(150, 25)
+        self.setHdriButton = QtWidgets.QPushButton('Set HDRI')
+        self.setFloorButton = QtWidgets.QPushButton('Create floor')
+        self.toggleColorPaletteButton = QtWidgets.QPushButton('Hide color palette')
+        self.createTurnButton = QtWidgets.QPushButton('Create turntable')
+        self.storePrefsButton = QtWidgets.QPushButton('Store preferences')
+        self.importPrefsButton = QtWidgets.QPushButton('Import preferences')
+        self.clearSceneButton = QtWidgets.QPushButton('Clear scene')
+
+        # ComboBox
+        self.renderEngineCombo = QtWidgets.QComboBox()
+        self.renderEngineCombo.addItem('Arnold')
+        self.renderEngineCombo.addItem('VRay')
+        self.setGroundMenu = QtWidgets.QComboBox()
+        self.setGroundMenu.addItem('Studio')
+        self.setGroundMenu.addItem('Bathtub')
+        self.setGroundMenu.addItem('Simple floor')
+        pal = self.setGroundMenu.palette()
+        pal.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
+        self.setGroundMenu.setPalette(pal)
+        self.setHdriMenu = QtWidgets.QComboBox()
+        self.setHdriMenu.addItem('studio_small_09_4k')
+        self.setHdriMenu.addItem('secluded_beach_4k')
+        self.setHdriMenu.addItem('artist_workshop_4k')
+        self.setHdriMenu.addItem('brown_photostudio_02_4k')
+        self.setHdriMenu.addItem('scythian_tombs_puresky_4k')
+        palTwo = self.setHdriMenu.palette()
+        palTwo.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
+        self.setHdriMenu.setPalette(palTwo)
+
+        # checkboxs
+        self.fillLightCheckBox = QtWidgets.QCheckBox()
+        self.fillLightCheckBox.setText('Enable')
+        self.keyLightCheckBox = QtWidgets.QCheckBox()
+        self.keyLightCheckBox.setText('Enable')
+        self.backLightCheckBox = QtWidgets.QCheckBox()
+        self.backLightCheckBox.setText('Enable')
+
+        # Labels
         self.rotateCamTitle = QtWidgets.QLabel('Rotate camera')
         self.rotateCamTitle.setFixedSize(90, 10)
         self.rotateCamLabel = QtWidgets.QLineEdit('0')
@@ -69,21 +111,6 @@ class MainUi(QtWidgets.QDialog):
         self.turnTableTitle = QtWidgets.QLabel('Number of frames')
         self.turnTableFrameLabel = QtWidgets.QLineEdit('120')
 
-        # Buttons
-        self.setDirectoryButton = QtWidgets.QPushButton('Find tool folder')
-        self.setDirectoryButton.setIcon(QtGui.QIcon('icons:Folder.png'))
-        self.createCamButton = QtWidgets.QPushButton('Create Camera')
-        self.createCamButton.setFixedSize(150, 25)
-        self.createLightButton = QtWidgets.QPushButton('Create three points light')
-        self.createLightButton.setFixedSize(150, 25)
-        self.setHdriButton = QtWidgets.QPushButton('Set HDRI')
-        self.setFloorButton = QtWidgets.QPushButton('Create floor')
-        self.toggleColorPaletteButton = QtWidgets.QPushButton('Hide color palette')
-        self.createTurnButton = QtWidgets.QPushButton('Create turntable')
-        self.storePrefsButton = QtWidgets.QPushButton('Store preferences')
-        self.importPrefsButton = QtWidgets.QPushButton('Import preferences')
-        self.clearSceneButton = QtWidgets.QPushButton('Clear scene')
-
         # Sliders
         self.rotateCamSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.rotateCamSlider.setTickInterval(1)
@@ -109,32 +136,6 @@ class MainUi(QtWidgets.QDialog):
         self.lightDomeRotateSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.lightDomeRotateSlider.setMaximum(360)
         self.lightDomeRotateSlider.setValue(0)
-
-        # ComboBox
-        self.setGroundMenu = QtWidgets.QComboBox()
-        self.setGroundMenu.addItem('Studio')
-        self.setGroundMenu.addItem('Bathtub')
-        self.setGroundMenu.addItem('Simple floor')
-        pal = self.setGroundMenu.palette()
-        pal.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
-        self.setGroundMenu.setPalette(pal)
-        self.setHdriMenu = QtWidgets.QComboBox()
-        self.setHdriMenu.addItem('studio_small_09_4k')
-        self.setHdriMenu.addItem('secluded_beach_4k')
-        self.setHdriMenu.addItem('artist_workshop_4k')
-        self.setHdriMenu.addItem('brown_photostudio_02_4k')
-        self.setHdriMenu.addItem('scythian_tombs_puresky_4k')
-        palTwo = self.setHdriMenu.palette()
-        palTwo.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
-        self.setHdriMenu.setPalette(palTwo)
-
-        # checkboxs
-        self.fillLightCheckBox = QtWidgets.QCheckBox()
-        self.fillLightCheckBox.setText('Enable')
-        self.keyLightCheckBox = QtWidgets.QCheckBox()
-        self.keyLightCheckBox.setText('Enable')
-        self.backLightCheckBox = QtWidgets.QCheckBox()
-        self.backLightCheckBox.setText('Enable')
 
         # Separators
         self.sep1 = widgets.QHLine()
@@ -167,9 +168,10 @@ class MainUi(QtWidgets.QDialog):
         self.hLayoutHeight = QtWidgets.QHBoxLayout()
 
         # Add widgets
-        self.mainLayout.addWidget(self.colorSpaceMenu, 0, 0)
-        self.mainLayout.addWidget(self.setDirectoryButton, 0, 1)
-        self.mainLayout.addWidget(self.sep1,1, 0)
+        self.mainLayout.addWidget(self.renderEngineCombo, 0, 0)
+        self.mainLayout.addWidget(self.colorSpaceMenu, 0, 1)
+        self.mainLayout.addWidget(self.setDirectoryButton, 0, 2)
+        self.mainLayout.addWidget(self.sep1, 1, 0)
         self.mainLayout.addWidget(self.createCamButton, 2, 0)
         self.hLayout.addWidget(self.rotateCamTitle)
         self.hLayout.addWidget(self.rotateCamLabel)
@@ -247,9 +249,10 @@ class MainUi(QtWidgets.QDialog):
         self.clearSceneButton.setStyleSheet('color: white; background: darkRed')
 
     def _connectUi(self):
+        self.renderEngineCombo.currentIndexChanged.connect(self.setRenderEngine)
         self.colorSpaceMenu.currentIndexChanged.connect(self.changeColorSpace)
         self.setDirectoryButton.clicked.connect(self.openBrowser)
-        self.createCamButton.clicked.connect(partial(lookdev_core.createCam, constants.COLOR_CHECKER_PATH))
+        self.createCamButton.clicked.connect(self.sendToCreateCam)
         self.createCamButton.clicked.connect(self.resetRotateCamSlider)
         self.rotateCamSlider.valueChanged.connect(self.updateRotateCamValueFromSlider)
         self.rotateCamLabel.textEdited.connect(self.changeRotateCamValueFromQline)
@@ -286,6 +289,25 @@ class MainUi(QtWidgets.QDialog):
         self.colorSpaceMenu = QtWidgets.QComboBox()
         [self.colorSpaceMenu.addItem(colorSpace) for colorSpace in constants.COLORSPACE_LIST]
 
+    def setRenderEngine(self):
+        # Set witch module is used to send commands
+        if self.renderEngineCombo.currentText() == 'VRay':
+            self.renderEngine = vray_core
+            self.lightDomeClass = self.renderEngine.LightDome()
+            constants.setGroundPath('vray')
+            constants.setColorCheckerPath('vray')
+
+        else:
+            self.renderEngine = arnold_core
+            self.lightDomeClass = self.renderEngine.LightDome()
+            constants.setGroundPath('arnold')
+            constants.setColorCheckerPath('arnold')
+
+        self.groundClass = self.renderEngine.GroundClass()
+
+    def sendToCreateCam(self):
+        self.renderEngine.createCam(constants.COLOR_CHECKER_PATH)
+
     def resetRotateCamSlider(self):
         """
         Reset the cam slider when cam is created
@@ -307,7 +329,6 @@ class MainUi(QtWidgets.QDialog):
         """
         groundDirectory = cmds.fileDialog2(fileFilter='*', fileMode=3, dialogStyle=2)
 
-
         constants.PREFERENCE_PATH = groundDirectory[0] + '/Preferences.txt'
         constants.LIGHT_DOME_PATH = groundDirectory[0] + '/'
 
@@ -319,7 +340,7 @@ class MainUi(QtWidgets.QDialog):
         self.rotateCamLabel.setText(str(self.rotateCamSlider.value()))
 
         # send rotateCam value to rotateCam in Core
-        lookdev_core.rotateCam(self.rotateCamSlider.value())
+        self.renderEngine.rotateCam(self.rotateCamSlider.value())
 
     def changeRotateCamValueFromQline(self):
         """
@@ -332,7 +353,7 @@ class MainUi(QtWidgets.QDialog):
         Send createLight to Core and reset sliders and lineedits
         """
         # send setThreePointsLight to Core
-        lookdev_core.setThreePointsLights()
+        self.renderEngine.setThreePointsLights()
 
         if not cmds.objExists('Lights_Grp'):
             self.rotateLightSlider.setValue(0)
@@ -363,7 +384,7 @@ class MainUi(QtWidgets.QDialog):
         self.rotateLightLabel.setText(str(self.rotateLightSlider.value()))
 
         # send to Core
-        lookdev_core.rotLights(self.rotateLightSlider.value())
+        self.renderEngine.rotLights(self.rotateLightSlider.value())
 
     def changeRotateLightLabelFromQline(self):
         """
@@ -382,7 +403,7 @@ class MainUi(QtWidgets.QDialog):
         Changes Fill light label from slider's value and send it to Core
         """
         self.fillLightLabel.setText(str(self.fillLightSlider.value()))
-        lookdev_core.changeLightIntensity('fillLight', int(self.fillLightSlider.value()))
+        self.renderEngine.changeLightIntensity('fillLight', int(self.fillLightSlider.value()))
 
     def changeFillLightSliderFromQline(self):
         """
@@ -401,7 +422,7 @@ class MainUi(QtWidgets.QDialog):
         Changes key light label from slider and send it to Core
         """
         self.keyLightLabel.setText(str(self.keyLightSlider.value()))
-        lookdev_core.changeLightIntensity('keyLight', int(self.keyLightLabel.text()))
+        self.renderEngine.changeLightIntensity('keyLight', int(self.keyLightLabel.text()))
 
     def changeBackLightFromQline(self):
         """
@@ -414,7 +435,7 @@ class MainUi(QtWidgets.QDialog):
         Changes back light label from slider and send it to Core
         """
         self.backLightLabel.setText(str(self.backLightSlider.value()))
-        lookdev_core.changeLightIntensity('backLight', int(self.backLightLabel.text()))
+        self.renderEngine.changeLightIntensity('backLight', int(self.backLightLabel.text()))
 
     def enableAllLights(self):
         """
@@ -445,19 +466,19 @@ class MainUi(QtWidgets.QDialog):
         """
         Send fill light enable to Core
         """
-        lookdev_core.disableLight('fillLight', self.fillLightCheckBox.isChecked())
+        self.renderEngine.disableLight('fillLight', self.fillLightCheckBox.isChecked())
 
     def enableKeyLight(self):
         """
         Send key light enable to Core
         """
-        lookdev_core.disableLight('keyLight', self.keyLightCheckBox.isChecked())
+        self.renderEngine.disableLight('keyLight', self.keyLightCheckBox.isChecked())
 
     def enableBackLight(self):
         """
         Send back light enable to Core
         """
-        lookdev_core.disableLight('backLight', self.backLightCheckBox.isChecked())
+        self.renderEngine.disableLight('backLight', self.backLightCheckBox.isChecked())
 
     def setHdri(self):
         """
@@ -528,7 +549,7 @@ class MainUi(QtWidgets.QDialog):
         constants.LIGHT_VALUES[1].get('keyLight', {})['keyLightEnabled'] = self.keyLightCheckBox.isChecked()
         constants.LIGHT_VALUES[2].get('backLight', {})['backLightEnabled'] = self.backLightCheckBox.isChecked()
 
-        lookdev_core.storePrefs()
+        self.renderEngine.storePrefs()
 
     def importPrefs(self):
         """
@@ -549,12 +570,12 @@ class MainUi(QtWidgets.QDialog):
             self.backLightSlider.setValue(fileReaded[2].get('backLight', {}).get('backLightIntens'))
             self.backLightCheckBox.setChecked(fileReaded[2].get('backLight', {}).get('backLightEnabled'))
 
-        lookdev_core.importPrefs(constants.PREFERENCE_PATH)
+        self.renderEngine.importPrefs(constants.PREFERENCE_PATH)
 
     def clearScene(self):
         """
         Send clear scene to Core and reset light's sliders and labels"""
-        self.clearSceneButton.clicked.connect(lookdev_core.clearScene(
+        self.clearSceneButton.clicked.connect(self.renderEngine.clearScene(
                                                       constants.COLOR_CHECKER_PATH,
                                                       constants.GROUND_1_PATH,
                                                       constants.GROUND_2_PATH,
