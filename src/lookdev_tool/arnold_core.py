@@ -10,7 +10,7 @@ from lookdev_tool import constants
 ARNOLD_CORE_LOGGER = logging.getLogger(__name__)
 ARNOLD_CORE_LOGGER.setLevel(10)
 
-#TODO: fix arnold lights, scene is full black when i render in arnold mode
+
 class GroundClass(object):
     @staticmethod
     def setGround(index):
@@ -97,13 +97,15 @@ class LightDome(object):
         """
         Changes lightDom intensity
         """
-        cmds.setAttr('lightDome.intensity', value)
+        if cmds.objExists('lightDome'):
+            cmds.setAttr('lightDome.intensity', value)
 
     def rotateDome(self, value):
         """
         Changes lightDom rotation
         """
-        cmds.setAttr('{}.rotateY'.format(self.lightDomeTransform), value)
+        if cmds.objExists('lightDome'):
+            cmds.setAttr('{}.rotateY'.format(self.lightDomeTransform), value)
 
 
 def createLight(name, intensity, translates, rotates):
@@ -158,6 +160,10 @@ def setThreePointsLights():
         cmds.setAttr('{}.aiCamera'.format('keyLight'), 0)
         cmds.setAttr('{}.aiCamera'.format('backLight'), 0)
 
+        cmds.setAttr('{}.intensity'.format('fillLight'), 1)
+        cmds.setAttr('{}.intensity'.format('keyLight'), 1)
+        cmds.setAttr('{}.intensity'.format('backLight'), 1)
+
         lightGroup = cmds.createNode('transform', name='Lights_Grp', skipSelect=True)
 
         cmds.parent('fillLightTransform', lightGroup)
@@ -180,7 +186,7 @@ def changeLightIntensity(light, intensity):
     Changes fill light intensity if it's in scene
     """
     if cmds.objExists('Lights_Grp'):
-        cmds.setAttr('{}.intensity'.format(light), intensity)
+        cmds.setAttr('{}.exposure'.format(light), intensity)
 
 
 def createCam(colorCheckerPath):
@@ -192,9 +198,9 @@ def createCam(colorCheckerPath):
 
     if not cmds.objExists('Cam_Main_Grp'):
         cmds.createNode('camera', name='Main_Cam', skipSelect=True)
-        cameraTransfo = cmds.listRelatives('Main_Cam', parent=True)
+        cameraTransform = cmds.listRelatives('Main_Cam', parent=True)
         cameraOffset = cmds.createNode('transform', name='Camera_Offset', skipSelect=True)
-        cmds.rename(cameraTransfo, 'Main_Cam_Transform')
+        cmds.rename(cameraTransform, 'Main_Cam_Transform')
 
         # create color palette
         cmds.file(colorCheckerPath, reference=True)
@@ -219,7 +225,7 @@ def createCam(colorCheckerPath):
 def rotateCam(rotateValue):
     """
     Rotate cam's offset group
-    :param rotateValue: rotate value from rotateCam's Qline
+    :param: rotateValue: rotate value from rotateCam's Qline
     """
     if cmds.objExists('Cam_Main_Grp'):
         cmds.setAttr('{}.{}'.format('Cam_Main_Grp', 'rotateY'), rotateValue)
@@ -228,10 +234,16 @@ def rotateCam(rotateValue):
 def disableLight(light, state):
     """
     Disable fill light if it's in scene
-    :param state: light presence query
+    :param: state(bool): light presence query
+    light(str): light name
     """
-    if cmds.objExists('Lights_Grp'):
-        cmds.setAttr('{}.enabled'.format(light), state)
+    if state and cmds.objExists(light):
+        cmds.connectAttr(
+            '{}.instObjGroups[0]'.format(light), 'defaultLightSet.dagSetMembers', nextAvailable=True
+        )
+
+    if not state and cmds.objExists(light):
+        cmds.disconnectAttr('{}.instObjGroups[0]'.format(light), 'defaultLightSet.dagSetMembers', nextAvailable=True)
 
 
 def storePrefs():

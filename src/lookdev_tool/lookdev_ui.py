@@ -294,12 +294,18 @@ class MainUi(QtWidgets.QDialog):
         if self.renderEngineCombo.currentText() == 'VRay':
             self.renderEngine = vray_core
             self.lightDomeClass = self.renderEngine.LightDome()
+            self.fillLight = 'fillLight'
+            self.keyLight = 'keyLight'
+            self.backLight = 'backLight'
             constants.setGroundPath('vray')
             constants.setColorCheckerPath('vray')
 
         else:
             self.renderEngine = arnold_core
             self.lightDomeClass = self.renderEngine.LightDome()
+            self.fillLight = 'fillLightTransform'
+            self.keyLight = 'keyLightTransform'
+            self.backLight = 'backLightTransform'
             constants.setGroundPath('arnold')
             constants.setColorCheckerPath('arnold')
 
@@ -355,7 +361,7 @@ class MainUi(QtWidgets.QDialog):
         # send setThreePointsLight to Core
         self.renderEngine.setThreePointsLights()
 
-        if not cmds.objExists('Lights_Grp'):
+        if not lookdev_core.queryExists('Lights_Grp'):
             self.rotateLightSlider.setValue(0)
             self.rotateLightLabel.setText('0')
             self.fillLightLabel.setText('0')
@@ -403,7 +409,7 @@ class MainUi(QtWidgets.QDialog):
         Changes Fill light label from slider's value and send it to Core
         """
         self.fillLightLabel.setText(str(self.fillLightSlider.value()))
-        self.renderEngine.changeLightIntensity('fillLight', int(self.fillLightSlider.value()))
+        self.renderEngine.changeLightIntensity(self.fillLight, int(self.fillLightSlider.value()))
 
     def changeFillLightSliderFromQline(self):
         """
@@ -422,7 +428,7 @@ class MainUi(QtWidgets.QDialog):
         Changes key light label from slider and send it to Core
         """
         self.keyLightLabel.setText(str(self.keyLightSlider.value()))
-        self.renderEngine.changeLightIntensity('keyLight', int(self.keyLightLabel.text()))
+        self.renderEngine.changeLightIntensity(self.keyLight, int(self.keyLightLabel.text()))
 
     def changeBackLightFromQline(self):
         """
@@ -435,28 +441,28 @@ class MainUi(QtWidgets.QDialog):
         Changes back light label from slider and send it to Core
         """
         self.backLightLabel.setText(str(self.backLightSlider.value()))
-        self.renderEngine.changeLightIntensity('backLight', int(self.backLightLabel.text()))
+        self.renderEngine.changeLightIntensity(self.backLight, int(self.backLightLabel.text()))
 
     def enableAllLights(self):
         """
         Enable all lights when create light button is pressed
         """
         # fillLight
-        if not cmds.objExists('Lights_Grp'):
+        if not lookdev_core.queryExists('Lights_Grp'):
             self.fillLightCheckBox.setChecked(False)
 
         else:
             self.fillLightCheckBox.setChecked(True)
 
         # keyLight
-        if not cmds.objExists('Lights_Grp'):
+        if not lookdev_core.queryExists('Lights_Grp'):
             self.keyLightCheckBox.setChecked(False)
 
         else:
             self.keyLightCheckBox.setChecked(True)
 
         # backLight
-        if not cmds.objExists('Lights_Grp'):
+        if not lookdev_core.queryExists('Lights_Grp'):
             self.backLightCheckBox.setChecked(False)
 
         else:
@@ -466,19 +472,19 @@ class MainUi(QtWidgets.QDialog):
         """
         Send fill light enable to Core
         """
-        self.renderEngine.disableLight('fillLight', self.fillLightCheckBox.isChecked())
+        self.renderEngine.disableLight(self.fillLight, self.fillLightCheckBox.isChecked())
 
     def enableKeyLight(self):
         """
         Send key light enable to Core
         """
-        self.renderEngine.disableLight('keyLight', self.keyLightCheckBox.isChecked())
+        self.renderEngine.disableLight(self.keyLight, self.keyLightCheckBox.isChecked())
 
     def enableBackLight(self):
         """
         Send back light enable to Core
         """
-        self.renderEngine.disableLight('backLight', self.backLightCheckBox.isChecked())
+        self.renderEngine.disableLight(self.backLight, self.backLightCheckBox.isChecked())
 
     def setHdri(self):
         """
@@ -487,7 +493,7 @@ class MainUi(QtWidgets.QDialog):
         self.lightDomeClass.setLightDome(self.setHdriMenu.currentText())
 
         # if HDRI exists, set lightDome's slider and Qline to 1
-        if not cmds.objExists('JS_lightDome'):
+        if not lookdev_core.queryExists('JS_lightDome'):
             self.lightDomeRotateSlider.setValue(0)
             self.lightDomeRotateLabel.setText('0')
             self.lightDomeIntensSlider.setValue(0)
@@ -545,9 +551,9 @@ class MainUi(QtWidgets.QDialog):
         # lights coordinates and intensity
         # add checkboxes values
 
-        constants.LIGHT_VALUES[0].get('fillLight', {})['fillLightEnabled'] = self.fillLightCheckBox.isChecked()
-        constants.LIGHT_VALUES[1].get('keyLight', {})['keyLightEnabled'] = self.keyLightCheckBox.isChecked()
-        constants.LIGHT_VALUES[2].get('backLight', {})['backLightEnabled'] = self.backLightCheckBox.isChecked()
+        constants.LIGHT_VALUES[0].get(self.fillLight, {})['fillLightEnabled'] = self.fillLightCheckBox.isChecked()
+        constants.LIGHT_VALUES[1].get(self.keyLight, {})['keyLightEnabled'] = self.keyLightCheckBox.isChecked()
+        constants.LIGHT_VALUES[2].get(self.backLight, {})['backLightEnabled'] = self.backLightCheckBox.isChecked()
 
         self.renderEngine.storePrefs()
 
@@ -575,28 +581,21 @@ class MainUi(QtWidgets.QDialog):
     def clearScene(self):
         """
         Send clear scene to Core and reset light's sliders and labels"""
-        self.clearSceneButton.clicked.connect(self.renderEngine.clearScene(
-                                                      constants.COLOR_CHECKER_PATH,
-                                                      constants.GROUND_1_PATH,
-                                                      constants.GROUND_2_PATH,
-                                                      constants.GROUND_3_PATH))
+        self.renderEngine.clearScene(constants.COLOR_CHECKER_PATH,
+                                     constants.GROUND_1_PATH,
+                                     constants.GROUND_2_PATH,
+                                     constants.GROUND_3_PATH
+                                     )
 
         # reset sliders and labels
-        self.rotateCamLabel.setText('0')
+        self.fillLightCheckBox.setChecked(False)
+        self.keyLightCheckBox.setChecked(False)
+        self.backLightCheckBox.setChecked(False)
         self.rotateCamSlider.setValue(0)
         self.rotateLightSlider.setValue(0)
-        self.rotateLightLabel.setText('0')
         self.rotateLightSlider.setValue(0)
-        self.fillLightLabel.setText('0')
         self.fillLightSlider.setValue(0)
-        self.fillLightCheckBox.setChecked(False)
-        self.keyLightLabel.setText('0')
         self.keyLightSlider.setValue(0)
-        self.keyLightCheckBox.setChecked(False)
-        self.backLightLabel.setText('0')
         self.backLightSlider.setValue(0)
-        self.backLightCheckBox.setChecked(False)
-        self.lightDomeintensLabel.setText('0')
         self.lightDomeIntensSlider.setValue(0)
-        self.lightDomeRotateLabel.setText('0')
         self.lightDomeRotateSlider.setValue(0)

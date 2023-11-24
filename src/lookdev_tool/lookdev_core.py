@@ -52,3 +52,7 @@ def toggleColorPalette():
         raise RuntimeError(' Camera not in scene ')
 
     cmds.setAttr('ColorPalette_ALL_Grp.visibility', not cmds.getAttr('ColorPalette_ALL_Grp.visibility'))
+
+
+def queryExists(item):
+    return cmds.objExists(item)
