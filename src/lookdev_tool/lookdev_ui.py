@@ -1,5 +1,6 @@
 from maya import cmds
 import json
+import os
 
 from PySide2 import QtCore, QtWidgets, QtGui
 
@@ -18,7 +19,7 @@ class MainUi(QtWidgets.QDialog):
     def __init__(self):
 
         super(MainUi, self).__init__(parent=openMaya_utils.maya_main_window(QtWidgets.QDialog))
-        self.colorList = []
+        self.colorList = [] 
         self._buildUi()
         self.setRenderEngine()
         self.createComboBox()
@@ -290,6 +291,7 @@ class MainUi(QtWidgets.QDialog):
         [self.colorSpaceMenu.addItem(colorSpace) for colorSpace in constants.COLORSPACE_LIST]
 
     def setRenderEngine(self):
+        self.basePath = os.path.dirname(os.path.abspath(__file__))
         # Set witch module is used to send commands
         if self.renderEngineCombo.currentText() == 'VRay':
             self.renderEngine = vray_core
@@ -297,8 +299,10 @@ class MainUi(QtWidgets.QDialog):
             self.fillLight = 'fillLight'
             self.keyLight = 'keyLight'
             self.backLight = 'backLight'
-            constants.setGroundPath('vray')
-            constants.setColorCheckerPath('vray')
+            self.ground_1_path = os.path.join(self.basePath,'resources/grounds/ground_1_vray.ma')
+            self.ground_2_path = os.path.join(self.basePath,'resources/grounds/ground_2_vray.ma')
+            self.ground_3_path = os.path.join(self.basePath,'resources/grounds/ground_3_vray.ma')
+            self.color_checker_path = os.path.join(self.basePath, 'resources/camera/ColorPalette_vray.ma')
 
         else:
             self.renderEngine = arnold_core
@@ -306,13 +310,15 @@ class MainUi(QtWidgets.QDialog):
             self.fillLight = 'fillLightTransform'
             self.keyLight = 'keyLightTransform'
             self.backLight = 'backLightTransform'
-            constants.setGroundPath('arnold')
-            constants.setColorCheckerPath('arnold')
-
-        self.groundClass = self.renderEngine.GroundClass()
+            self.ground_1_path = os.path.join(self.basePath, 'resources/grounds/ground_1_arnold.ma')
+            self.ground_2_path = os.path.join(self.basePath, 'resources/grounds/ground_2_arnold.ma')
+            self.ground_3_path = os.path.join(self.basePath, 'resources/grounds/ground_3_arnold.ma')
+            self.color_checker_path = os.path.join(self.basePath, 'resources/camera/ColorPalette_arnold.ma')
+        
+        self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
 
     def sendToCreateCam(self):
-        self.renderEngine.createCam(constants.COLOR_CHECKER_PATH)
+        self.renderEngine.createCam(self.color_checker_path)
 
     def resetRotateCamSlider(self):
         """
@@ -581,10 +587,10 @@ class MainUi(QtWidgets.QDialog):
     def clearScene(self):
         """
         Send clear scene to Core and reset light's sliders and labels"""
-        self.renderEngine.clearScene(constants.COLOR_CHECKER_PATH,
-                                     constants.GROUND_1_PATH,
-                                     constants.GROUND_2_PATH,
-                                     constants.GROUND_3_PATH
+        self.renderEngine.clearScene(self.color_checker_path,
+                                     self.ground_1_path,
+                                     self.ground_2_path,
+                                     self.ground_3_path
                                      )
 
         # reset sliders and labels

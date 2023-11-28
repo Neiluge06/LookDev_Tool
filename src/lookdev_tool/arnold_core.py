@@ -12,57 +12,58 @@ ARNOLD_CORE_LOGGER.setLevel(10)
 
 
 class GroundClass(object):
-    @staticmethod
-    def setGround(index):
+    def __init__(self, path1, path2, path3, colorCheckerPath):
+        self.path1 = path1
+        self.path2 = path2
+        self.path3 = path3
+        self.colorCheckerPath = colorCheckerPath
+
+    def setGround(self, index):
         """
         Set ground and delete if one is already set
         :param index: Combo box current floor
 
         """
-        path1 = constants.GROUND_1_PATH
-        path2 = constants.GROUND_2_PATH
-        path3 = constants.GROUND_3_PATH
-
-        ARNOLD_CORE_LOGGER.debug('path1: {}, path2: {}, path3: {}'.format(path1, path2, path3))
+        ARNOLD_CORE_LOGGER.debug('self.path1: {}, self.path2: {}, self.path3: {}'.format(self.path1, self.path2, self.path3))
 
         # import ground 1
         if index == 0:
             if cmds.objExists('ground_1_arnold_ALL_Grp'):
-                cmds.file(path1, removeReference=True)
+                cmds.file(self.path1, removeReference=True)
             else:
-                cmds.file(path1, reference=True)
+                cmds.file(self.path1, reference=True)
 
                 if cmds.objExists('ground_2_arnold_ALL_Grp'):
-                    cmds.file(path2, removeReference=True)
+                    cmds.file(self.path2, removeReference=True)
 
                 if cmds.objExists('ground_3_arnold_ALL_Grp'):
-                    cmds.file(path3, removeReference=True)
+                    cmds.file(self.path3, removeReference=True)
 
         # import ground 2
         if index == 1:
             if cmds.objExists('ground_2_arnold_ALL_Grp'):
-                cmds.file(path2, removeReference=True)
+                cmds.file(self.path2, removeReference=True)
             else:
-                cmds.file(path2, reference=True)
+                cmds.file(self.path2, reference=True)
 
                 if cmds.objExists('ground_1_arnold_ALL_Grp'):
-                    cmds.file(path1, removeReference=True)
+                    cmds.file(self.path1, removeReference=True)
 
                 if cmds.objExists('ground_3_arnold_ALL_Grp'):
-                    cmds.file(path3, removeReference=True)
+                    cmds.file(self.path3, removeReference=True)
 
         # import ground 3
         if index == 2:
             if cmds.objExists('ground_3_arnold_ALL_Grp'):
-                cmds.file(path3, removeReference=True)
+                cmds.file(self.path3, removeReference=True)
             else:
-                cmds.file(path3, reference=True)
+                cmds.file(self.path3, reference=True)
 
                 if cmds.objExists('ground_1_arnold_ALL_Grp'):
-                    cmds.file(path1, removeReference=True)
+                    cmds.file(self.path1, removeReference=True)
 
                 if cmds.objExists('ground_2_arnold_ALL_Grp'):
-                    cmds.file(path2, removeReference=True)
+                    cmds.file(self.path2, removeReference=True)
 
         cmds.select(clear=True)
 
