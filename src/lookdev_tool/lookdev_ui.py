@@ -17,7 +17,6 @@ class MainUi(QtWidgets.QDialog):
     Main UI class
     """
     def __init__(self):
-
         super(MainUi, self).__init__(parent=openMaya_utils.maya_main_window(QtWidgets.QDialog))
         self.colorList = [] 
         self._buildUi()
@@ -299,22 +298,23 @@ class MainUi(QtWidgets.QDialog):
             self.fillLight = 'fillLight'
             self.keyLight = 'keyLight'
             self.backLight = 'backLight'
-            self.ground_1_path = os.path.join(self.basePath,'resources/grounds/ground_1_vray.ma')
-            self.ground_2_path = os.path.join(self.basePath,'resources/grounds/ground_2_vray.ma')
-            self.ground_3_path = os.path.join(self.basePath,'resources/grounds/ground_3_vray.ma')
-            self.color_checker_path = os.path.join(self.basePath, 'resources/camera/ColorPalette_vray.ma')
+            self.ground_1_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_1_vray.ma'))
+            self.ground_2_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_2_vray.ma'))
+            self.ground_3_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_3_vray.ma'))
+            self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_vray.ma'))
+            self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
+            return
 
-        else:
-            self.renderEngine = arnold_core
-            self.lightDomeClass = self.renderEngine.LightDome()
-            self.fillLight = 'fillLightTransform'
-            self.keyLight = 'keyLightTransform'
-            self.backLight = 'backLightTransform'
-            self.ground_1_path = os.path.join(self.basePath, 'resources/grounds/ground_1_arnold.ma')
-            self.ground_2_path = os.path.join(self.basePath, 'resources/grounds/ground_2_arnold.ma')
-            self.ground_3_path = os.path.join(self.basePath, 'resources/grounds/ground_3_arnold.ma')
-            self.color_checker_path = os.path.join(self.basePath, 'resources/camera/ColorPalette_arnold.ma')
-        
+        self.renderEngine = arnold_core
+        self.lightDomeClass = self.renderEngine.LightDome()
+        self.fillLight = 'fillLightTransform'
+        self.keyLight = 'keyLightTransform'
+        self.backLight = 'backLightTransform'
+        self.ground_1_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_1_arnold.ma'))
+        self.ground_2_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_2_arnold.ma'))
+        self.ground_3_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_3_arnold.ma'))
+        self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_arnold.ma'))
+
         self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
 
     def sendToCreateCam(self):

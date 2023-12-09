@@ -1,1 +1,1 @@
-import lookdev_tool.resources
+from lookdev_tool import resources

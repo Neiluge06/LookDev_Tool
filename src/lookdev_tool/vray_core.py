@@ -247,7 +247,9 @@ def rotateCam(rotateValue):
 def disableLight(light, state):
     """
     Disable fill light if it's in scene
-    :param state: light presence query
+    :parameters:
+        light: query of light in maya scene
+        state: state of the light
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('{}.enabled'.format(light), state)
