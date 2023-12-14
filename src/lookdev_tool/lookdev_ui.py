@@ -112,28 +112,27 @@ class MainUi(QtWidgets.QDialog):
         self.turnTableFrameLabel = QtWidgets.QLineEdit('120')
 
         # Sliders
-        self.rotateCamSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.rotateCamSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.rotateCamSlider.setTickInterval(1)
         self.rotateCamSlider.setMinimum(0)
         self.rotateCamSlider.setMaximum(360)
-        self.rotateCamSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.rotateLightSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.rotateLightSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.rotateLightSlider.setTickInterval(1)
         self.rotateLightSlider.setMinimum(0)
         self.rotateLightSlider.setMaximum(360)
-        self.fillLightSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.fillLightSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.fillLightSlider.setValue(0)
         self.fillLightSlider.setMaximum(500)
-        self.keyLightSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.keyLightSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.keyLightSlider.setValue(0)
         self.keyLightSlider.setMaximum(500)
-        self.backLightSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.backLightSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.backLightSlider.setValue(0)
         self.backLightSlider.setMaximum(500)
-        self.lightDomeIntensSlider = widgets.FloatSlider()
+        self.lightDomeIntensSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.lightDomeIntensSlider.setValue(1)
         self.lightDomeIntensSlider.setMaximum(10)
-        self.lightDomeRotateSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.lightDomeRotateSlider = widgets.FloatSlider(QtCore.Qt.Horizontal)
         self.lightDomeRotateSlider.setMaximum(360)
         self.lightDomeRotateSlider.setValue(0)
 
@@ -255,25 +254,25 @@ class MainUi(QtWidgets.QDialog):
         self.createCamButton.clicked.connect(self.sendToCreateCam)
         self.createCamButton.clicked.connect(self.resetRotateCamSlider)
         self.rotateCamSlider.valueChanged.connect(self.updateRotateCamValueFromSlider)
-        self.rotateCamLabel.textEdited.connect(self.changeRotateCamValueFromQline)
+        self.rotateCamLabel.editingFinished.connect(self.changeRotateCamValueFromQline)
         self.createLightButton.clicked.connect(self.setThreePointsLights)
         self.createLightButton.clicked.connect(self.enableAllLights)
         self.rotateLightSlider.valueChanged.connect(self.rotateLightFromSlider)
-        self.rotateLightLabel.textEdited.connect(self.changeRotateLightLabelFromQline)
+        self.rotateLightLabel.editingFinished.connect(self.changeRotateLightLabelFromQline)
         self.setFloorButton.clicked.connect(self.setGround)
         self.fillLightSlider.valueChanged.connect(self.changeFillLightLabelFromSlider)
-        self.fillLightLabel.textEdited.connect(self.changeFillLightSliderFromQline)
+        self.fillLightLabel.editingFinished.connect(self.changeFillLightSliderFromQline)
         self.keyLightSlider.valueChanged.connect(self.changeKeyLightLabelFromSlider)
-        self.keyLightLabel.textEdited.connect(self.changeKeyLightFromQline)
-        self.backLightLabel.textEdited.connect(self.changeBackLightFromQline)
+        self.keyLightLabel.editingFinished.connect(self.changeKeyLightFromQline)
+        self.backLightLabel.editingFinished.connect(self.changeBackLightFromQline)
         self.backLightSlider.valueChanged.connect(self.changeBackLightFromSlider)
         self.fillLightCheckBox.stateChanged.connect(self.enableFillLight)
         self.keyLightCheckBox.stateChanged.connect(self.enableKeyLight)
         self.backLightCheckBox.stateChanged.connect(self.enableBackLight)
         self.setHdriButton.clicked.connect(self.setHdri)
-        self.lightDomeintensLabel.textEdited.connect(self.changeLightDomeItensFromQline)
+        self.lightDomeintensLabel.editingFinished.connect(self.changeLightDomeItensFromQline)
         self.lightDomeIntensSlider.valueChanged.connect(self.changeLightDomeItensFromSlider)
-        self.lightDomeRotateLabel.textEdited.connect(self.changeLightDomerotateFromQline)
+        self.lightDomeRotateLabel.editingFinished.connect(self.changeLightDomerotateFromQline)
         self.lightDomeRotateSlider.valueChanged.connect(self.changeLightDomerotateFromSlider)
         self.toggleColorPaletteButton.clicked.connect(self.toggleColorPalette)
         self.createTurnButton.clicked.connect(self.createTurn)
@@ -349,7 +348,7 @@ class MainUi(QtWidgets.QDialog):
         changes the rotateCam label when slider is moved
         """
         # change rotateCam label value
-        self.rotateCamLabel.setText(str(self.rotateCamSlider.value()))
+        self.rotateCamLabel.setText(str(self.rotateCamSlider.value())[:6])
 
         # send rotateCam value to rotateCam in Core
         self.renderEngine.rotateCam(self.rotateCamSlider.value())
@@ -358,7 +357,7 @@ class MainUi(QtWidgets.QDialog):
         """
         Changes rotateCam label's value from slider
         """
-        self.rotateCamSlider.setValue(int(self.rotateCamLabel.text()))
+        self.rotateCamSlider.setValue(float(self.rotateCamLabel.text()))
 
     def setThreePointsLights(self):
         """
@@ -393,7 +392,7 @@ class MainUi(QtWidgets.QDialog):
         changes the rotateLight label when slider is moved and send it to Core
         """
         # change rotateCam label value
-        self.rotateLightLabel.setText(str(self.rotateLightSlider.value()))
+        self.rotateLightLabel.setText(str(self.rotateLightSlider.value())[:6])
 
         # send to Core
         self.renderEngine.rotLights(self.rotateLightSlider.value())
@@ -402,7 +401,7 @@ class MainUi(QtWidgets.QDialog):
         """
         Changes rotateLight label's value from slider
         """
-        self.rotateLightSlider.setValue(int(self.rotateLightLabel.text()))
+        self.rotateLightSlider.setValue(float(self.rotateLightLabel.text()))
 
     def setGround(self):
         """
@@ -414,40 +413,40 @@ class MainUi(QtWidgets.QDialog):
         """
         Changes Fill light label from slider's value and send it to Core
         """
-        self.fillLightLabel.setText(str(self.fillLightSlider.value()))
-        self.renderEngine.changeLightIntensity(self.fillLight, int(self.fillLightSlider.value()))
+        self.fillLightLabel.setText(str(self.fillLightSlider.value())[:6])
+        self.renderEngine.changeLightIntensity(self.fillLight, float(self.fillLightSlider.value()))
 
     def changeFillLightSliderFromQline(self):
         """
         Changes Fill light slider from label's value
         """
-        self.fillLightSlider.setValue(int(self.fillLightLabel.text()))
+        self.fillLightSlider.setValue(float(self.fillLightLabel.text()))
 
     def changeKeyLightFromQline(self):
         """
         Changes key light label from slider's value
         """
-        self.keyLightSlider.setValue(int(self.keyLightLabel.text()))
+        self.keyLightSlider.setValue(float(self.keyLightLabel.text()))
 
     def changeKeyLightLabelFromSlider(self):
         """
         Changes key light label from slider and send it to Core
         """
-        self.keyLightLabel.setText(str(self.keyLightSlider.value()))
-        self.renderEngine.changeLightIntensity(self.keyLight, int(self.keyLightLabel.text()))
+        self.keyLightLabel.setText(str(self.keyLightSlider.value())[:6])
+        self.renderEngine.changeLightIntensity(self.keyLight, float(self.keyLightLabel.text()))
 
     def changeBackLightFromQline(self):
         """
         Changes back light slider from Qline'text
         """
-        self.backLightSlider.setValue(int(self.backLightLabel.text()))
+        self.backLightSlider.setValue(float(self.backLightLabel.text()))
 
     def changeBackLightFromSlider(self):
         """
         Changes back light label from slider and send it to Core
         """
         self.backLightLabel.setText(str(self.backLightSlider.value()))
-        self.renderEngine.changeLightIntensity(self.backLight, int(self.backLightLabel.text()))
+        self.renderEngine.changeLightIntensity(self.backLight, float(self.backLightLabel.text()))
 
     def enableAllLights(self):
         """
