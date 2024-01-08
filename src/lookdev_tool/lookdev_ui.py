@@ -271,9 +271,9 @@ class MainUi(QtWidgets.QDialog):
         self.keyLightCheckBox.stateChanged.connect(self.enableKeyLight)
         self.backLightCheckBox.stateChanged.connect(self.enableBackLight)
         self.setHdriButton.clicked.connect(self.setHdri)
-        self.lightDomeintensLabel.editingFinished.connect(self.changeLightDomeItensFromQline)
-        self.lightDomeIntensSlider.valueChanged.connect(self.changeLightDomeItensFromSlider)
-        self.lightDomeRotateLabel.editingFinished.connect(self.changeLightDomerotateFromQline)
+        self.lightDomeintensLabel.editingFinished.connect(self.changeLightDomeIntensFromQLine)
+        self.lightDomeIntensSlider.valueChanged.connect(self.changeLightDomeIntensFromSlider)
+        self.lightDomeRotateLabel.editingFinished.connect(self.changeLightDomeRotateFromQLine)
         self.lightDomeRotateSlider.valueChanged.connect(self.changeLightDomerotateFromSlider)
         self.toggleColorPaletteButton.clicked.connect(self.toggleColorPalette)
         self.createTurnButton.clicked.connect(self.createTurn)
@@ -511,20 +511,20 @@ class MainUi(QtWidgets.QDialog):
         self.lightDomeIntensSlider.setValue(1)
         self.lightDomeintensLabel.setText('1')
 
-    def changeLightDomeItensFromQline(self):
+    def changeLightDomeIntensFromQLine(self):
         """
         Changes lightDome slider from Qline's text
         """
         self.lightDomeIntensSlider.setValue(float(self.lightDomeintensLabel.text()))
 
-    def changeLightDomeItensFromSlider(self):
+    def changeLightDomeIntensFromSlider(self):
         """
         Changes lightDome label from slider and send it to Core
         """
         self.lightDomeintensLabel.setText(str(self.lightDomeIntensSlider.value()))
         self.lightDomeClass.changeDome1Intens(float(self.lightDomeintensLabel.text()))
 
-    def changeLightDomerotateFromQline(self):
+    def changeLightDomeRotateFromQLine(self):
         """
         Changes lightDome rotate slider from Qline's text
         """
