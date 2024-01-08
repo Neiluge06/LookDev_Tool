@@ -71,8 +71,9 @@ class GroundClass(object):
 
 class LightDome(object):
 
-    @staticmethod
-    def setLightDome(hdriName):
+    LIGHT_DOME_NAME = 'lightDome'
+
+    def setLightDome(self, hdriName):
         """
         Set light dome and delete it if one is already set
         :param hdriName: HDRI's name from QlineEdit
@@ -82,8 +83,8 @@ class LightDome(object):
         if not cmds.pluginInfo('vrayformaya.mll', query=True, loaded=True):
             raise RuntimeError('vRay plugin not loaded')
 
-        if not cmds.objExists('lightDome'):
-            lightDome = cmds.createNode('VRayLightDomeShape', name='lightDome', skipSelect=True)
+        if not cmds.objExists(self.LIGHT_DOME_NAME):
+            lightDome = cmds.createNode('VRayLightDomeShape', name=self.LIGHT_DOME_NAME, skipSelect=True)
             lightDomeFile = lookdev_core.createFileText('dome1')
             cmds.setAttr('{}.{}'.format(lightDome, 'useDomeTex'), 1)
             cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}.exr'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
@@ -265,13 +266,16 @@ def storePrefs():
         raise RuntimeError('No lights in scene')
 
     for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}UScale'] = cmds.getAttr(f'{light}.uSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}VScale'] = cmds.getAttr(f'{light}.vSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}uSize'] = cmds.getAttr(f'{light}.uSize')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}vSize'] = cmds.getAttr(f'{light}.vSize')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
 
-    with open(constants.PREFERENCE_PATH, 'w') as wFile:
-        wFile.write(json.dumps(constants.LIGHT_VALUES, indent=4))
+    with open(constants.VRAY_PREFERENCE_PATH, 'w') as wFile:
+        wFile.write(json.dumps(constants.VRAY_LIGHT_VALUES, indent=4))
+
+        # Write prefs in Maya
+        cmds.optionVar(stringValue=('lookdev_vray_settings', json.dumps(constants.VRAY_LIGHT_VALUES, indent=4)))
 
 
 def clearScene(colorCheckerPath, ground1Path, ground2Path, ground3Path):
@@ -311,16 +315,20 @@ def clearScene(colorCheckerPath, ground1Path, ground2Path, ground3Path):
         cmds.delete(lightDelOne[-1])
 
 
-def importPrefs(lightValues):
-    """
-    Read .json to set position, rotation, scale and intensity to three points light
-    """
-    with open(lightValues, 'r') as fileRead:
-        lightDictLoad = json.load(fileRead)
+def importPrefs():
+    """Read .json to set position, rotation, scale and intensity to three points light"""
+    mayaSettings = cmds.optionVar(query='lookdev_vray_settings')
+    settings = json.loads(mayaSettings)
 
-        # set the position, scale and intensity
-        for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-            cmds.xform(f'{light}Transform', matrix=(lightDictLoad[index].get(f'{light}', {}).get(f'{light}Coords')))
-            cmds.setAttr(f'{light}.uSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}UScale')))
-            cmds.setAttr(f'{light}.vSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}VScale')))
-            cmds.setAttr(f'{light}.intensityMult', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}Intens')))
+    if not settings:
+        cmds.error("Settings not found")
+        return
+
+    # set the position, scale and intensity
+    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+        cmds.xform('{}Transform'.format(light), matrix=(settings[index].get(light, {}).get('{}Coords'.format(light), {})))
+        cmds.setAttr('{}.uSize'.format(light), (settings[index].get(light, {}).get('{}uSize'.format(light), {})))
+        cmds.setAttr('{}.vSize'.format(light), (settings[index].get(light, {}).get('{}vSize'.format(light), {})))
+        cmds.setAttr('{}.intensityMult'.format(light), (settings[index].get(f'{light}', {}).get('{}Intens'.format(light), {})))
+
+    return settings

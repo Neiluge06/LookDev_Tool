@@ -7,17 +7,42 @@ COLORSPACE_LIST = cmds.colorManagementPrefs(query=True, renderingSpaceNames=True
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 LIGHT_DOME_PATH = os.path.join(BASE_PATH, 'resources/hdri')
 
-PREFERENCE_PATH = os.path.join(BASE_PATH, 'resources/preferences/prefs.json')
+ARNOLD_PREFERENCE_PATH = os.path.join(BASE_PATH, 'resources/preferences/arnoldPrefs.json')
+VRAY_PREFERENCE_PATH = os.path.join(BASE_PATH, 'resources/preferences/vrayPrefs.json')
+VRAY_LIGHT_VALUES = \
+    (
+        {
+            'fillLight': {
 
-LIGHT_VALUES = \
-            (
-                {
-                    'fillLight': dict(),
-                },
-                {
-                    'keyLight': dict(),
-                },
-                {
-                    'backLight':dict(),
-                }
-            )
+            },
+        },
+        {
+            'keyLight': {
+
+            },
+        },
+        {
+            'backLight': {
+
+            },
+        }
+    )
+
+ARNOLD_LIGHT_VALUES =\
+    (
+        {
+            'fillLightTransform': {
+
+            },
+        },
+        {
+            'keyLightTransform': {
+
+            },
+        },
+        {
+            'backLightTransform': {
+
+            },
+        }
+    )

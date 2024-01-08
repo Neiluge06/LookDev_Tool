@@ -1,5 +1,4 @@
 from maya import cmds
-import json
 import os
 
 from PySide2 import QtCore, QtWidgets, QtGui
@@ -10,6 +9,8 @@ from lookdev_tool import lookdev_core
 from lookdev_tool.Utils import openMaya_utils
 from lookdev_tool.Utils import widgets
 from lookdev_tool import constants
+
+#TODO Build a class to manage preferences
 
 
 class MainUi(QtWidgets.QDialog):
@@ -361,7 +362,7 @@ class MainUi(QtWidgets.QDialog):
 
     def setThreePointsLights(self):
         """
-        Send createLight to Core and reset sliders and lineedits
+        Send createLight to Core and reset sliders and line edits
         """
         # send setThreePointsLight to Core
         self.renderEngine.setThreePointsLights()
@@ -375,17 +376,17 @@ class MainUi(QtWidgets.QDialog):
             self.keyLightLabel.setText('0')
             self.backLightSlider.setValue(0)
             self.backLightLabel.setText('0')
+            return
 
-        else:
-            # reset sliders and lineEdits
-            self.rotateLightSlider.setValue(0)
-            self.rotateLightLabel.setText('0')
-            self.fillLightLabel.setText('10')
-            self.fillLightSlider.setValue(10)
-            self.keyLightSlider.setValue(40)
-            self.keyLightLabel.setText('40')
-            self.backLightSlider.setValue(10)
-            self.backLightLabel.setText('10')
+        # reset sliders and lineEdits
+        self.rotateLightSlider.setValue(0)
+        self.rotateLightLabel.setText('0')
+        self.fillLightLabel.setText('10')
+        self.fillLightSlider.setValue(10)
+        self.keyLightSlider.setValue(40)
+        self.keyLightLabel.setText('40')
+        self.backLightSlider.setValue(10)
+        self.backLightLabel.setText('10')
 
     def rotateLightFromSlider(self):
         """
@@ -498,17 +499,17 @@ class MainUi(QtWidgets.QDialog):
         self.lightDomeClass.setLightDome(self.setHdriMenu.currentText())
 
         # if HDRI exists, set lightDome's slider and Qline to 1
-        if not lookdev_core.queryExists('JS_lightDome'):
+        if not lookdev_core.queryExists(self.lightDomeClass.LIGHT_DOME_NAME):
             self.lightDomeRotateSlider.setValue(0)
             self.lightDomeRotateLabel.setText('0')
             self.lightDomeIntensSlider.setValue(0)
             self.lightDomeintensLabel.setText('0')
+            return
 
-        else:
-            self.lightDomeRotateSlider.setValue(0)
-            self.lightDomeRotateLabel.setText('0')
-            self.lightDomeIntensSlider.setValue(1)
-            self.lightDomeintensLabel.setText('1')
+        self.lightDomeRotateSlider.setValue(0)
+        self.lightDomeRotateLabel.setText('0')
+        self.lightDomeIntensSlider.setValue(1)
+        self.lightDomeintensLabel.setText('1')
 
     def changeLightDomeItensFromQline(self):
         """
@@ -566,22 +567,18 @@ class MainUi(QtWidgets.QDialog):
         """
         Send import pref to Core with preference's path in argument and set the sliders
         """
-        with open(constants.PREFERENCE_PATH, 'r') as oFile:
-            fileReaded = json.load(oFile)
+        settings = self.renderEngine.importPrefs()
+        #fillLight
+        self.fillLightSlider.setValue(settings[0].get('fillLight', {}).get('fillLightIntens'))
+        self.fillLightCheckBox.setChecked(settings[0].get('fillLight', {}).get('fillLightEnabled'))
 
-            #fillLight
-            self.fillLightSlider.setValue(fileReaded[0].get('fillLight', {}).get('fillLightIntens'))
-            self.fillLightCheckBox.setChecked(fileReaded[0].get('fillLight', {}).get('fillLightEnabled'))
+        # keyLight
+        self.keyLightSlider.setValue(settings[1].get('keyLight', {}).get('keyLightIntens'))
+        self.keyLightCheckBox.setChecked(settings[1].get('keyLight', {}).get('keyLightEnabled'))
 
-            # keyLight
-            self.keyLightSlider.setValue(fileReaded[1].get('keyLight', {}).get('keyLightIntens'))
-            self.keyLightCheckBox.setChecked(fileReaded[1].get('keyLight', {}).get('keyLightEnabled'))
-
-            # backLight
-            self.backLightSlider.setValue(fileReaded[2].get('backLight', {}).get('backLightIntens'))
-            self.backLightCheckBox.setChecked(fileReaded[2].get('backLight', {}).get('backLightEnabled'))
-
-        self.renderEngine.importPrefs(constants.PREFERENCE_PATH)
+        # backLight
+        self.backLightSlider.setValue(settings[2].get('backLight', {}).get('backLightIntens'))
+        self.backLightCheckBox.setChecked(settings[2].get('backLight', {}).get('backLightEnabled'))
 
     def clearScene(self):
         """
