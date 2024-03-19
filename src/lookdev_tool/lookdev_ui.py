@@ -10,8 +10,7 @@ from lookdev_tool.Utils import openMaya_utils
 from lookdev_tool.Utils import widgets
 from lookdev_tool import constants
 
-#TODO Build a class to manage preferences
-
+# TODO Build a class to manage preferences
 
 class MainUi(QtWidgets.QDialog):
     """
@@ -26,6 +25,7 @@ class MainUi(QtWidgets.QDialog):
         self._connectUi()
         self.resize(500, 240)
         self._setupUi()
+        self.queryHdr()
 
         self.setWindowTitle(constants.TOOL_NAME)
 
@@ -58,11 +58,7 @@ class MainUi(QtWidgets.QDialog):
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
         self.setGroundMenu.setPalette(pal)
         self.setHdriMenu = QtWidgets.QComboBox()
-        self.setHdriMenu.addItem('studio_small_09_4k')
-        self.setHdriMenu.addItem('secluded_beach_4k')
-        self.setHdriMenu.addItem('artist_workshop_4k')
-        self.setHdriMenu.addItem('brown_photostudio_02_4k')
-        self.setHdriMenu.addItem('scythian_tombs_puresky_4k')
+
         palTwo = self.setHdriMenu.palette()
         palTwo.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
         self.setHdriMenu.setPalette(palTwo)
@@ -288,6 +284,11 @@ class MainUi(QtWidgets.QDialog):
         # comboBox
         self.colorSpaceMenu = QtWidgets.QComboBox()
         [self.colorSpaceMenu.addItem(colorSpace) for colorSpace in constants.COLORSPACE_LIST]
+        
+    def queryHdr(self):
+        for hdr in os.listdir(constants.LIGHT_DOME_PATH):
+            if hdr.split('.')[-1]in constants.HDR_EXTENSIONS:
+                self.setHdriMenu.addItem(hdr)
 
     def setRenderEngine(self):
         self.basePath = os.path.dirname(os.path.abspath(__file__))
@@ -303,6 +304,7 @@ class MainUi(QtWidgets.QDialog):
             self.ground_3_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_3_vray.ma'))
             self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_vray.ma'))
             self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
+            self.lightValues = constants.VRAY_LIGHT_VALUES
             return
 
         self.renderEngine = arnold_core
@@ -314,8 +316,8 @@ class MainUi(QtWidgets.QDialog):
         self.ground_2_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_2_arnold.ma'))
         self.ground_3_path = QtCore.QDir.path(QtCore.QDir('grounds:ground_3_arnold.ma'))
         self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_arnold.ma'))
-
         self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
+        self.lightValues = constants.ARNOLD_LIGHT_VALUES
 
     def sendToCreateCam(self):
         self.renderEngine.createCam(self.color_checker_path)
@@ -557,9 +559,9 @@ class MainUi(QtWidgets.QDialog):
         # lights coordinates and intensity
         # add checkboxes values
 
-        constants.LIGHT_VALUES[0].get(self.fillLight, {})['fillLightEnabled'] = self.fillLightCheckBox.isChecked()
-        constants.LIGHT_VALUES[1].get(self.keyLight, {})['keyLightEnabled'] = self.keyLightCheckBox.isChecked()
-        constants.LIGHT_VALUES[2].get(self.backLight, {})['backLightEnabled'] = self.backLightCheckBox.isChecked()
+        self.lightValues[0].get(self.fillLight, {})['fillLightEnabled'] = self.fillLightCheckBox.isChecked()
+        self.lightValues[1].get(self.keyLight, {})['keyLightEnabled'] = self.keyLightCheckBox.isChecked()
+        self.lightValues[2].get(self.backLight, {})['backLightEnabled'] = self.backLightCheckBox.isChecked()
 
         self.renderEngine.storePrefs()
 

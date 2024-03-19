@@ -1,6 +1,7 @@
 [
     {
         "fillLightTransform": {
+            "fillLightEnabled": true,
             "fillLightTransformCoords": [
                 11.674536370809435,
                 -9.71445146547012e-17,
@@ -21,11 +22,12 @@
             ],
             "fillLightTransformscaleX": 14.0,
             "fillLightTransformscaleY": 10.0,
-            "fillLightTransformexposure": 10.0
+            "fillLightTransformexposure": 126.0
         }
     },
     {
         "keyLightTransform": {
+            "keyLightEnabled": true,
             "keyLightTransformCoords": [
                 7.21451211638351,
                 0.0,
@@ -46,11 +48,12 @@
             ],
             "keyLightTransformscaleX": 14.0,
             "keyLightTransformscaleY": 10.0,
-            "keyLightTransformexposure": 40.0
+            "keyLightTransformexposure": 227.63999938964844
         }
     },
     {
         "backLightTransform": {
+            "backLightEnabled": true,
             "backLightTransformCoords": [
                 -11.728996010328402,
                 0.0,
@@ -71,7 +74,7 @@
             ],
             "backLightTransformscaleX": 14.0,
             "backLightTransformscaleY": 10.0,
-            "backLightTransformexposure": 10.0
+            "backLightTransformexposure": 313.0
         }
     }
 ]
