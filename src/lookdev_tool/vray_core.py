@@ -87,7 +87,7 @@ class LightDome(object):
             lightDome = cmds.createNode('VRayLightDomeShape', name=self.LIGHT_DOME_NAME, skipSelect=True)
             lightDomeFile = lookdev_core.createFileText('dome1')
             cmds.setAttr('{}.{}'.format(lightDome, 'useDomeTex'), 1)
-            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}.exr'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
+            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
             cmds.setAttr('{}.{}'.format(lightDome, 'invisible'), 1)
             cmds.connectAttr('{}.{}'.format(lightDomeFile, 'outColor'), '{}.{}'.format(lightDome, 'domeTex'))
 
