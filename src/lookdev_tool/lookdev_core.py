@@ -44,14 +44,14 @@ def createTurn(numberOfFrames):
         cmds.setKeyframe('Lights_Grp', attribute='rotateY', time=float(numberOfFrames), value=360, inTangentType='linear', outTangentType='linear')
 
 
-def toggleColorPalette():
+def toggleColorPalette(colorPaletteName):
     """
     Hide the colorpalette, simple hide function from maya
     """
     if not cmds.objExists('Cam_Main_Grp'):
         raise RuntimeError(' Camera not in scene ')
 
-    cmds.setAttr('ColorPalette_ALL_Grp.visibility', not cmds.getAttr('ColorPalette_ALL_Grp.visibility'))
+    cmds.setAttr('{}.visibility'.format(colorPaletteName), not cmds.getAttr('{}.visibility'.format(colorPaletteName)))
 
 
 def queryExists(item):

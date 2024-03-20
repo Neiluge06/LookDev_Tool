@@ -305,6 +305,7 @@ class MainUi(QtWidgets.QDialog):
             self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_vray.ma'))
             self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
             self.lightValues = constants.VRAY_LIGHT_VALUES
+            self.colorpaletteName = 'ColorPalette_vray_ALL_Grp'
             return
 
         self.renderEngine = arnold_core
@@ -318,6 +319,7 @@ class MainUi(QtWidgets.QDialog):
         self.color_checker_path = QtCore.QDir.path(QtCore.QDir('camera:ColorPalette_arnold.ma'))
         self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
         self.lightValues = constants.ARNOLD_LIGHT_VALUES
+        self.colorpaletteName = 'ColorPalette_arnold_ALL_Grp'
 
     def sendToCreateCam(self):
         self.renderEngine.createCam(self.color_checker_path)
@@ -539,12 +541,11 @@ class MainUi(QtWidgets.QDialog):
         self.lightDomeRotateLabel.setText(str(self.lightDomeRotateSlider.value()))
         self.lightDomeClass.rotateDome(float(self.lightDomeRotateLabel.text()))
 
-    @staticmethod
-    def toggleColorPalette():
+    def toggleColorPalette(self):
         """
         Send hide color palette to Core
         """
-        lookdev_core.toggleColorPalette()
+        lookdev_core.toggleColorPalette(self.colorpaletteName)
 
     def createTurn(self):
         """
