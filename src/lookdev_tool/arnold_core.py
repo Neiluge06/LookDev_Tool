@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from typing import Tuple
 
 from maya import cmds
 
@@ -12,17 +13,17 @@ ARNOLD_CORE_LOGGER.setLevel(10)
 
 
 class GroundClass(object):
-    def __init__(self, path1, path2, path3, colorCheckerPath):
+    def __init__(self, path1, path2, path3, colorCheckerPath) -> None:
         self.path1 = path1
         self.path2 = path2
         self.path3 = path3
         self.colorCheckerPath = colorCheckerPath
 
-    def setGround(self, index):
-        """
-        Set ground and delete if one is already set
-        :param index: Combo box current floor
+    def setGround(self, index: int) -> None:
+        """Sets ground and delete if one is already set
 
+        Parameters:
+             index: Combo box current floor
         """
         ARNOLD_CORE_LOGGER.debug('self.path1: {}, self.path2: {}, self.path3: {}'.format(self.path1, self.path2, self.path3))
 
@@ -69,55 +70,59 @@ class GroundClass(object):
 
 
 class LightDome(object):
+    def setLightDome(self, hdriName: str) -> None:
+        """Sets light dome and delete it if one is already set
 
-    LIGHT_DOME_NAME = 'lightDome'
-
-    def setLightDome(self, hdriName):
+        Parameters:
+             hdriName: HDRI's name from QlineEdit
         """
-        Set light dome and delete it if one is already set
-        :param hdriName: HDRI's name from QlineEdit
-        """
-        if not cmds.objExists(self.LIGHT_DOME_NAME):
+        if not cmds.objExists('lightDome'):
             lightDome = cmds.createNode('aiSkyDomeLight', name='lightDome', skipSelect=True)
             # rename lightDome transform node
-            lightDomeT = cmds.listRelatives(self.LIGHT_DOME_NAME, parent=True)[0]
+            lightDomeT = cmds.listRelatives('lightDome', parent=True)[0]
             self.lightDomeTransform = cmds.rename(lightDomeT, 'lightDomeTransfom')
 
             lightDomeFile = lookdev_core.createFileText('dome1')
-            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
+            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}.exr'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
             cmds.connectAttr('{}.{}'.format(lightDomeFile, 'outColor'), '{}.{}'.format(lightDome, 'color'))
 
             cmds.setAttr('{}.camera'.format(lightDome), 0)
-            cmds.setAttr('{}.intensity'.format(lightDome), 1)
-            cmds.setAttr('{}.exposure'.format(lightDome), 1)
 
         else:
-            lightDelOne = cmds.listConnections(self.LIGHT_DOME_NAME, source=True)
+            lightDelOne = cmds.listConnections('lightDome', source=True)
             lightDelTwo = cmds.listConnections(lightDelOne[-1], source=True)
 
             cmds.delete(lightDelTwo[1:])
             cmds.delete(lightDelOne[-1])
 
     @staticmethod
-    def changeDome1Intens(value):
-        """
-        Changes lightDom intensity
+    def changeDome1Intens(value: str) -> None:
+        """Changes lightDom intensity
+
+        Parameters:
+            value: The intensity value.
         """
         if cmds.objExists('lightDome'):
             cmds.setAttr('lightDome.intensity', value)
 
-    def rotateDome(self, value):
-        """
-        Changes lightDom rotation
+    def rotateDome(self, value: str) -> None:
+        """Changes lightDom rotation
+
+        Parameters:
+            value: The rotation value.
         """
         if cmds.objExists('lightDome'):
             cmds.setAttr('{}.rotateY'.format(self.lightDomeTransform), value)
 
 
-def createLight(name, intensity, translates, rotates):
-    """
-    Creates light function
-    :return: None
+def createLight(name: str, intensity: int, translates: Tuple[float, float, float], rotates: Tuple[float, float, float]) -> None:
+    """Creates light function
+
+    Parameters:
+        name: The light name.
+        intensity: The light intensity.
+        translates: The light coordinates.
+        rotates: The light Rotations.
     """
     # create key light and rename the transform
     light = cmds.createNode('aiAreaLight', name=name, skipSelect=True)
@@ -149,10 +154,8 @@ def createLight(name, intensity, translates, rotates):
     cmds.setAttr('{}.{}'.format(rampKeyL, 'interpolation'), 3)
 
 
-def setThreePointsLights():
-    """
-    Set Three points light in scene and delete them is they are already in scene
-    """
+def setThreePointsLights() -> None:
+    """Set Three points light in scene and delete them is they are already in scene"""
     if cmds.objExists('fillLightTransform') and cmds.objExists('keyLightTransform') and cmds.objExists('backLightTransform'):
         cmds.delete('Lights_Grp')
 
@@ -179,26 +182,32 @@ def setThreePointsLights():
         cmds.select(clear=True)
 
 
-def rotLights(rotation):
-    """
-    Set rotations on the light's offset group
+def rotLights(rotation: Tuple[float, float, float]) -> None:
+    """Set rotations on the light's offset group
+
+    Parameters:
+        rotation: The light rotations.
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('Lights_Grp.rotateY', rotation)
 
 
-def changeLightIntensity(light, intensity):
-    """
-    Changes fill light intensity if it's in scene
+def changeLightIntensity(light: str, intensity: float) -> None:
+    """Changes fill light intensity if it's in scene
+
+    Parameters:
+        light: The light name.
+        intensity: The light intensity.
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('{}.exposure'.format(light), intensity)
 
 
-def createCam(colorCheckerPath):
-    """
-    Create camera in scene
-    :param colorCheckerPath: path of colorchecker to reference it
+def createCam(colorCheckerPath: str) -> None:
+    """Create camera in scene
+
+    Parameters:
+         colorCheckerPath: The path of colorchecker.
     """
     cmds.select(clear=True)
 
@@ -228,20 +237,22 @@ def createCam(colorCheckerPath):
     cmds.select(clear=True)
 
 
-def rotateCam(rotateValue):
-    """
-    Rotate cam's offset group
-    :param: rotateValue: rotate value from rotateCam's Qline
+def rotateCam(rotateValue: str) -> None:
+    """Rotate cam's offset group.
+
+    Parameters:
+        rotateValue: The rotate value from rotateCam's Qline.
     """
     if cmds.objExists('Cam_Main_Grp'):
         cmds.setAttr('{}.{}'.format('Cam_Main_Grp', 'rotateY'), rotateValue)
 
 
-def disableLight(light, state):
-    """
-    Disable fill light if it's in scene
-    :param: state(bool): light presence query
-    light(str): light name
+def disableLight(light: str, state: bool) -> None:
+    """Disable fill light if it's in scene
+
+    Parameters:
+        light(str): The light's name.
+        state: light presence query
     """
     if state and cmds.objExists(light):
         cmds.connectAttr(
@@ -252,33 +263,32 @@ def disableLight(light, state):
         cmds.disconnectAttr('{}.instObjGroups[0]'.format(light), 'defaultLightSet.dagSetMembers', nextAvailable=True)
 
 
-def storePrefs():
+def storePrefs() -> None:
     """Creates a json and write coordinates to replace the lights"""
     # create dict from lights position, values, intensity and scale
 
     if not cmds.objExists('fillLightTransform'):
         raise RuntimeError('No lights in scene')
 
-    for index, light in enumerate(['fillLightTransform', 'keyLightTransform', 'backLightTransform']):
-        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})['{}Coords'.format(light)] = cmds.xform(light, query=True, matrix=True)
-        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})['{}scaleX'.format(light)] = cmds.getAttr('{}.scaleX'.format(light))
-        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})['{}scaleY'.format(light)] = cmds.getAttr('{}.scaleY'.format(light))
-        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})['{}exposure'.format(light)] = cmds.getAttr('{}.exposure'.format(light))
+    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
+        constants.LIGHT_VALUES[index].get(light, {})[f'{light}UScale'] = cmds.getAttr(f'{light}.uSize')
+        constants.LIGHT_VALUES[index].get(light, {})[f'{light}VScale'] = cmds.getAttr(f'{light}.vSize')
+        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
 
-    with open(constants.ARNOLD_PREFERENCE_PATH, 'w') as wFile:
-        wFile.write(json.dumps(constants.ARNOLD_LIGHT_VALUES, indent=4))
-
-        # Write prefs in Maya
-        cmds.optionVar(stringValue=('lookdev_arnold_settings', json.dumps(constants.ARNOLD_LIGHT_VALUES, indent=4)))
+    with open(constants.PREFERENCE_PATH, 'w') as wFile:
+        wFile.write(json.dumps(constants.LIGHT_VALUES, indent=4))
 
 
-def clearScene(colorCheckerPath, ground1Path, ground2Path, ground3Path):
+def clearScene(colorCheckerPath: str, ground1Path: str, ground2Path: str, ground3Path: str) -> None:
     """
     Clear all tool's nodes in scene
-    :param colorCheckerPath: colorChecker's path
-    :param ground1Path: ground1's path
-    :param ground2Path: ground2's path
-    :param ground3Path: ground3's path
+
+    Parameters:
+        colorCheckerPath: colorChecker's path.
+        ground1Path: ground1's path.
+        ground2Path: ground2's path.
+        ground3Path: ground3's path.
     """
     # cam
     if cmds.objExists('Cam_Main_Grp'):
@@ -311,21 +321,18 @@ def clearScene(colorCheckerPath, ground1Path, ground2Path, ground3Path):
         cmds.delete(lightDelOne[0])
 
 
-def importPrefs():
-    """
-    Read .json to set position, rotation, scale and intensity to three points light
-    """
-    arnoldMayaSettings = cmds.optionVar(query='lookdev_arnold_settings')
-    arnoldSettings = json.loads(arnoldMayaSettings)
+def importPrefs(prefPath: str) -> None:
+    """Read .json to set position, rotation, scale and intensity to three points light.
 
-    if not arnoldSettings:
-        cmds.error("Settings not found")
-        return
-    print(arnoldSettings)
+    Parameters:
+        prefPath: The preference path.
+    """
+    with open(prefPath, 'r') as fileRead:
+        lightDictLoad = json.load(fileRead)
 
-    # set the position, scale and intensity
-    for index, light in enumerate(['fillLightTransform', 'keyLightTransform', 'backLightTransform']):
-        cmds.xform(light, matrix=(arnoldSettings[index].get(light, {}).get('{}Coords'.format(light))))
-        cmds.setAttr('{}.scaleX'.format(light), (arnoldSettings[index].get(light, {}).get('{}scaleX'.format(light))))
-        cmds.setAttr('{}.scaleY'.format(light), (arnoldSettings[index].get(light, {}).get('{}scaleY'.format(light))))
-        cmds.setAttr('{}.exposure'.format(light), (arnoldSettings[index].get(light, {}).get('{}exposure'.format(light))))
+        # set the position, scale and intensity
+        for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+            cmds.xform(f'{light}Transform', matrix=(lightDictLoad[index].get(f'{light}', {}).get(f'{light}Coords')))
+            cmds.setAttr(f'{light}.uSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}UScale')))
+            cmds.setAttr(f'{light}.vSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}VScale')))
+            cmds.setAttr(f'{light}.intensityMult', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}Intens')))
