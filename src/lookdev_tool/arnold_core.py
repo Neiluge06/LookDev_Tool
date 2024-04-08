@@ -263,23 +263,6 @@ def disableLight(light: str, state: bool) -> None:
         cmds.disconnectAttr('{}.instObjGroups[0]'.format(light), 'defaultLightSet.dagSetMembers', nextAvailable=True)
 
 
-def storePrefs() -> None:
-    """Creates a json and write coordinates to replace the lights"""
-    # create dict from lights position, values, intensity and scale
-
-    if not cmds.objExists('fillLightTransform'):
-        raise RuntimeError('No lights in scene')
-
-    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}UScale'] = cmds.getAttr(f'{light}.uSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}VScale'] = cmds.getAttr(f'{light}.vSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
-
-    with open(constants.PREFERENCE_PATH, 'w') as wFile:
-        wFile.write(json.dumps(constants.LIGHT_VALUES, indent=4))
-
-
 def clearScene(colorCheckerPath: str, ground1Path: str, ground2Path: str, ground3Path: str) -> None:
     """
     Clear all tool's nodes in scene
@@ -321,18 +304,40 @@ def clearScene(colorCheckerPath: str, ground1Path: str, ground2Path: str, ground
         cmds.delete(lightDelOne[0])
 
 
-def importPrefs(prefPath: str) -> None:
-    """Read .json to set position, rotation, scale and intensity to three points light.
+def storePrefs() -> None:
+    """Creates a json and write coordinates to replace the lights"""
+    # create dict from lights position, values, intensity and scale
 
-    Parameters:
-        prefPath: The preference path.
-    """
-    with open(prefPath, 'r') as fileRead:
-        lightDictLoad = json.load(fileRead)
+    if not cmds.objExists('fillLightTransform'):
+        raise RuntimeError('No lights in scene')
 
-        # set the position, scale and intensity
-        for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-            cmds.xform(f'{light}Transform', matrix=(lightDictLoad[index].get(f'{light}', {}).get(f'{light}Coords')))
-            cmds.setAttr(f'{light}.uSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}UScale')))
-            cmds.setAttr(f'{light}.vSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}VScale')))
-            cmds.setAttr(f'{light}.intensityMult', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}Intens')))
+    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
+        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})[f'{light}scaleX'] = cmds.getAttr(f'{light}Transform.scaleX')
+        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})[f'{light}scaleY'] = cmds.getAttr(f'{light}Transform.scaleY')
+        constants.ARNOLD_LIGHT_VALUES[index].get(light, {})[f'{light}intens'] = cmds.getAttr(f'{light}.intensity')
+
+    with open(constants.VRAY_PREFERENCE_PATH, 'w') as wFile:
+        wFile.write(json.dumps(constants.ARNOLD_LIGHT_VALUES, indent=4))
+
+        # Write prefs in Maya
+        cmds.optionVar(stringValue=('lookdev_arnold_settings', json.dumps(constants.ARNOLD_LIGHT_VALUES, indent=4)))
+
+
+def importPrefs() -> None:
+    """Read .json to set position, rotation, scale and intensity to three points light"""
+    mayaSettings = cmds.optionVar(query='lookdev_arnold_settings')
+    settings = json.loads(mayaSettings)
+
+    if not settings:
+        cmds.error("Settings not found")
+        return
+
+    # set the position, scale and intensity
+    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+        cmds.xform('{}Transform'.format(light), matrix=(settings[index].get(light, {}).get('{}Coords'.format(light), {})))
+        cmds.setAttr('{}Transform.scaleX'.format(light), (settings[index].get(light, {}).get('{}scaleX'.format(light), {})))
+        cmds.setAttr('{}Transform.scaleY'.format(light), (settings[index].get(light, {}).get('{}scaleY'.format(light), {})))
+        cmds.setAttr('{}.intensity'.format(light), (settings[index].get(f'{light}', {}).get('{}intens'.format(light), {})))
+
+    return settings

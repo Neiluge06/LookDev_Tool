@@ -33,17 +33,17 @@ VRAY_LIGHT_VALUES = \
 ARNOLD_LIGHT_VALUES =\
     (
         {
-            'fillLightTransform': {
+            'fillLight': {
 
             },
         },
         {
-            'keyLightTransform': {
+            'keyLight': {
 
             },
         },
         {
-            'backLightTransform': {
+            'backLight': {
 
             },
         }

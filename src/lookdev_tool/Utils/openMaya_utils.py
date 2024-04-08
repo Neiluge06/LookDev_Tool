@@ -2,7 +2,7 @@ from shiboken2 import wrapInstance
 import maya.OpenMaya
 
 
-def maya_main_window(widget):
+def getMayaMainWindow(widget):
     """
         Return the Maya main window widget as a Python object
     """
