@@ -1,10 +1,9 @@
-from typing import Tuple
+import maya.mel as mel
 import os
 import json
 import logging
 
 from maya import cmds
-import maya.mel as mel
 
 from lookdev_tool import lookdev_core
 from lookdev_tool import constants
@@ -14,17 +13,17 @@ VRAY_CORE_LOGGER.setLevel(10)
 
 
 class GroundClass(object):
-    def __init__(self, path1: str, path2: str, path3: str, colorCheckerPath: str) -> None:
+    def __init__(self, path1, path2, path3, colorCheckerPath):
         self.path1 = path1
         self.path2 = path2
         self.path3 = path3
         self.colorCheckerPath = colorCheckerPath
 
-    def setGround(self, index: int) -> None:
-        """Sets ground and delete if one is already set
+    def setGround(self, index):
+        """
+        Set ground and delete if one is already set
+        :param index: Combo box current floor
 
-        Parameters:
-             index: Current floor's index.
         """
         VRAY_CORE_LOGGER.debug('self.path1: {}, self.path2: {}, self.path3: {}'.format(self.path1, self.path2, self.path3))
 
@@ -72,24 +71,23 @@ class GroundClass(object):
 
 class LightDome(object):
 
-    @staticmethod
-    def setLightDome(hdriName: str) -> None:
+    LIGHT_DOME_NAME = 'lightDome'
+
+    def setLightDome(self, hdriName):
         """
         Set light dome and delete it if one is already set
-
-        Parameters:
-             hdriName: HDRI's name from QlineEdit.
+        :param hdriName: HDRI's name from QlineEdit
         """
 
         # query vRay plugin
         if not cmds.pluginInfo('vrayformaya.mll', query=True, loaded=True):
             raise RuntimeError('vRay plugin not loaded')
 
-        if not cmds.objExists('lightDome'):
-            lightDome = cmds.createNode('VRayLightDomeShape', name='lightDome', skipSelect=True)
+        if not cmds.objExists(self.LIGHT_DOME_NAME):
+            lightDome = cmds.createNode('VRayLightDomeShape', name=self.LIGHT_DOME_NAME, skipSelect=True)
             lightDomeFile = lookdev_core.createFileText('dome1')
             cmds.setAttr('{}.{}'.format(lightDome, 'useDomeTex'), 1)
-            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}.exr'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
+            cmds.setAttr('{}.{}'.format(lightDomeFile, 'fileTextureName'), '{}'.format(os.path.join(constants.LIGHT_DOME_PATH, hdriName)), type='string')
             cmds.setAttr('{}.{}'.format(lightDome, 'invisible'), 1)
             cmds.connectAttr('{}.{}'.format(lightDomeFile, 'outColor'), '{}.{}'.format(lightDome, 'domeTex'))
 
@@ -101,34 +99,26 @@ class LightDome(object):
             cmds.delete(lightDelOne[-1])
 
     @staticmethod
-    def changeDome1Intens(value: float) -> None:
-        """Changes lightDom intensity
-
-        Parameters:
-            value: The intensity value.
+    def changeDome1Intens(value):
+        """
+        Changes lightDom intensity
         """
         cmds.setAttr('lightDome.intensityMult', value)
 
     @staticmethod
-    def rotateDome(value: float) -> None:
-        """Changes lightDom rotation
-
-        Parameters:
-            value: The rotation value.
+    def rotateDome(value):
+        """
+        Changes lightDom rotation
         """
         domeText = cmds.listConnections('VRayLightDome1', connections=True)
 
         cmds.setAttr('{}.{}'.format(domeText[1], 'horRotation'), value)
 
 
-def createLight(name: str, intensity: int, translates: Tuple[float, float, float], rotates: Tuple[float, float, float]) -> None:
-    """Creates light function.
-
-    Parameters:
-        name: The light name.
-        intensity: The light intensity.
-        translates: The light coordinates.
-        rotates: The light Rotations.
+def createLight(name, intensity, translates, rotates):
+    """
+    Creates light function
+    :return: None
     """
     # query vRay plugin
     if not cmds.pluginInfo('vrayformaya.mll', query=True, loaded=True):
@@ -167,8 +157,10 @@ def createLight(name: str, intensity: int, translates: Tuple[float, float, float
     cmds.setAttr('{}.{}'.format(rampKeyL, 'interpolation'), 3)
 
 
-def setThreePointsLights() -> None:
-    """Sets Three points light in scene and delete them is they are already in scene"""
+def setThreePointsLights():
+    """
+    Set Three points light in scene and delete them is they are already in scene
+    """
     if cmds.objExists('fillLightTransform') and cmds.objExists('keyLightTransform') and cmds.objExists('backLightTransform'):
         cmds.delete('Lights_Grp')
 
@@ -191,32 +183,26 @@ def setThreePointsLights() -> None:
         cmds.select(clear=True)
 
 
-def rotLights(rotation: float) -> None:
-    """Set rotations on the light's offset group
-
-    Parameters:
-        rotation: The light's rotation
+def rotLights(rotation):
+    """
+    Set rotations on the light's offset group
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('Lights_Grp.rotateY', rotation)
 
 
-def changeLightIntensity(light: str, intensity: float) -> None:
+def changeLightIntensity(light, intensity):
     """
     Changes fill light intensity if it's in scene
-
-    Parameters:
-        light: The light's name.
-        intensity: The light's intensity.
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('{}.intensity'.format(light), intensity)
 
 
-def createCam(colorCheckerPath: str) -> None:
-    """Create camera in scene
-    Parameters:
-        colorCheckerPath: The path of colorchecker to reference it.
+def createCam(colorCheckerPath):
+    """
+    Create camera in scene
+    :param colorCheckerPath: path of colorchecker to reference it
     """
     cmds.select(clear=True)
 
@@ -250,53 +236,55 @@ def createCam(colorCheckerPath: str) -> None:
     cmds.select(clear=True)
 
 
-def rotateCam(rotateValue: float) -> None:
-    """Rotate cam's offset group
-
-    Parameters:
-         rotateValue: rotate value from rotateCam's Qline
+def rotateCam(rotateValue):
+    """
+    Rotate cam's offset group
+    :param rotateValue: rotate value from rotateCam's Qline
     """
     if cmds.objExists('Cam_Main_Grp'):
         cmds.setAttr('{}.{}'.format('Cam_Main_Grp', 'rotateY'), rotateValue)
 
 
-def disableLight(light: str, state: bool) -> None:
+def disableLight(light, state):
     """
     Disable fill light if it's in scene
-
-    Parameters:
-        light: The query result of the light in maya scene.
-        state: state of the light.
+    :parameters:
+        light: query of light in maya scene
+        state: state of the light
     """
     if cmds.objExists('Lights_Grp'):
         cmds.setAttr('{}.enabled'.format(light), state)
 
 
-def storePrefs() -> None:
-    """Creates a json and write coordinates to replace the lights"""
+def storePrefs():
+    """
+    Creates a json and write coordinates to replace the lights
+    """
     # create dict from lights position, values, intensity and scale
 
     if not cmds.objExists('fillLightTransform'):
         raise RuntimeError('No lights in scene')
 
     for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}UScale'] = cmds.getAttr(f'{light}.uSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}VScale'] = cmds.getAttr(f'{light}.vSize')
-        constants.LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}Coords'] = cmds.xform(f'{light}Transform', query=True, matrix=True)
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}uSize'] = cmds.getAttr(f'{light}.uSize')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}vSize'] = cmds.getAttr(f'{light}.vSize')
+        constants.VRAY_LIGHT_VALUES[index].get(light, {})[f'{light}Intens'] = cmds.getAttr(f'{light}.intensityMult')
 
-    with open(constants.PREFERENCE_PATH, 'w') as wFile:
-        wFile.write(json.dumps(constants.LIGHT_VALUES, indent=4))
+    with open(constants.VRAY_PREFERENCE_PATH, 'w') as wFile:
+        wFile.write(json.dumps(constants.VRAY_LIGHT_VALUES, indent=4))
+
+        # Write prefs in Maya
+        cmds.optionVar(stringValue=('lookdev_vray_settings', json.dumps(constants.VRAY_LIGHT_VALUES, indent=4)))
 
 
-def clearScene(colorCheckerPath: str, ground1Path: str, ground2Path: str, ground3Path: str) -> None:
-    """Clear all tool's nodes in scene.
-
-    Parameters:
-        colorCheckerPath: colorChecker's path.
-        ground1Path: ground1's path.
-        ground2Path: ground2's path.
-        ground3Path: ground3's path.
+def clearScene(colorCheckerPath, ground1Path, ground2Path, ground3Path):
+    """
+    Clear all tool's nodes in scene
+    :param colorCheckerPath: colorChecker's path
+    :param ground1Path: ground1's path
+    :param ground2Path: ground2's path
+    :param ground3Path: ground3's path
     """
     # cam
     if cmds.objExists('Cam_Main_Grp'):
@@ -327,15 +315,20 @@ def clearScene(colorCheckerPath: str, ground1Path: str, ground2Path: str, ground
         cmds.delete(lightDelOne[-1])
 
 
-def importPrefs(paramPath: str) -> None:
+def importPrefs():
     """Read .json to set position, rotation, scale and intensity to three points light"""
+    mayaSettings = cmds.optionVar(query='lookdev_vray_settings')
+    settings = json.loads(mayaSettings)
 
-    with open(paramPath, 'r') as fileRead:
-        lightDictLoad = json.load(fileRead)
+    if not settings:
+        cmds.error("Settings not found")
+        return
 
-        # set the position, scale and intensity
-        for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
-            cmds.xform(f'{light}Transform', matrix=(lightDictLoad[index].get(f'{light}', {}).get(f'{light}Coords')))
-            cmds.setAttr(f'{light}.uSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}UScale')))
-            cmds.setAttr(f'{light}.vSize', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}VScale')))
-            cmds.setAttr(f'{light}.intensityMult', (lightDictLoad[index].get(f'{light}', {}).get(f'{light}Intens')))
+    # set the position, scale and intensity
+    for index, light in enumerate(['fillLight', 'keyLight', 'backLight']):
+        cmds.xform('{}Transform'.format(light), matrix=(settings[index].get(light, {}).get('{}Coords'.format(light), {})))
+        cmds.setAttr('{}.uSize'.format(light), (settings[index].get(light, {}).get('{}uSize'.format(light), {})))
+        cmds.setAttr('{}.vSize'.format(light), (settings[index].get(light, {}).get('{}vSize'.format(light), {})))
+        cmds.setAttr('{}.intensityMult'.format(light), (settings[index].get(f'{light}', {}).get('{}Intens'.format(light), {})))
+
+    return settings

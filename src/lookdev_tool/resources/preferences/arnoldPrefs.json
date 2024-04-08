@@ -1,0 +1,80 @@
+[
+    {
+        "fillLightTransform": {
+            "fillLightEnabled": true,
+            "fillLightTransformCoords": [
+                11.674536370809435,
+                -9.71445146547012e-17,
+                7.726914036447386,
+                0.0,
+                0.8758583249719837,
+                9.873280904792665,
+                -1.3233277634939145,
+                0.0,
+                -0.5449285200645028,
+                0.15869228636126376,
+                0.8233284073015733,
+                0.0,
+                -27.622,
+                13.845,
+                39.553,
+                1.0
+            ],
+            "fillLightTransformscaleX": 14.0,
+            "fillLightTransformscaleY": 10.0,
+            "fillLightTransformexposure": 126.0
+        }
+    },
+    {
+        "keyLightTransform": {
+            "keyLightEnabled": true,
+            "keyLightTransformCoords": [
+                7.21451211638351,
+                0.0,
+                -11.997950446745293,
+                0.0,
+                -1.6613534317252974,
+                9.810296636707648,
+                -0.9989918291443609,
+                0.0,
+                0.8407389493935025,
+                0.19385767717071764,
+                0.5055464567917408,
+                0.0,
+                42.354,
+                14.693,
+                24.781,
+                1.0
+            ],
+            "keyLightTransformscaleX": 14.0,
+            "keyLightTransformscaleY": 10.0,
+            "keyLightTransformexposure": 227.63999938964844
+        }
+    },
+    {
+        "backLightTransform": {
+            "backLightEnabled": true,
+            "backLightTransformCoords": [
+                -11.728996010328402,
+                0.0,
+                -7.6439945440653325,
+                0.0,
+                -1.032179653387608,
+                9.819686123646335,
+                1.5837833173134102,
+                0.0,
+                0.536154479668476,
+                0.18904402749274132,
+                -0.8226789954780358,
+                0.0,
+                17.813,
+                11.919,
+                -29.204,
+                1.0
+            ],
+            "backLightTransformscaleX": 14.0,
+            "backLightTransformscaleY": 10.0,
+            "backLightTransformexposure": 313.0
+        }
+    }
+]
