@@ -13,9 +13,7 @@ from lookdev_tool import constants
 
 
 class MainUi(QtWidgets.QDialog):
-    """
-    Main UI class
-    """
+    """Main UI class"""
     def __init__(self):
         super(MainUi, self).__init__(parent=openMaya_utils.maya_main_window(QtWidgets.QDialog))
         self.colorList = [] 
@@ -28,8 +26,7 @@ class MainUi(QtWidgets.QDialog):
 
         self.setWindowTitle(constants.TOOL_NAME)
 
-    def _buildUi(self):
-
+    def _buildUi(self) -> None:
         # Buttons
         self.setDirectoryButton = QtWidgets.QPushButton('Find tool folder')
         self.setDirectoryButton.setIcon(QtGui.QIcon('icons:Folder.png'))
@@ -66,7 +63,7 @@ class MainUi(QtWidgets.QDialog):
         palTwo.setColor(QtGui.QPalette.Button, QtGui.QColor(50, 50, 50))
         self.setHdriMenu.setPalette(palTwo)
 
-        # checkboxs
+        # checkBoxes
         self.fillLightCheckBox = QtWidgets.QCheckBox()
         self.fillLightCheckBox.setText('Enable')
         self.keyLightCheckBox = QtWidgets.QCheckBox()
@@ -154,7 +151,7 @@ class MainUi(QtWidgets.QDialog):
         self.sep15 = widgets.QHLine()
         self.sep16 = widgets.QHLine()
 
-    def _setupUi(self):
+    def _setupUi(self) -> None:
         # Creation
         self.mainLayout = QtWidgets.QGridLayout(self)
         self.hLayout = QtWidgets.QHBoxLayout(self)
@@ -247,7 +244,7 @@ class MainUi(QtWidgets.QDialog):
 
         self.clearSceneButton.setStyleSheet('color: white; background: darkRed')
 
-    def _connectUi(self):
+    def _connectUi(self) -> None:
         self.renderEngineCombo.currentIndexChanged.connect(self.setRenderEngine)
         self.colorSpaceMenu.currentIndexChanged.connect(self.changeColorSpace)
         self.setDirectoryButton.clicked.connect(self.openBrowser)
@@ -272,23 +269,22 @@ class MainUi(QtWidgets.QDialog):
         self.setHdriButton.clicked.connect(self.setHdri)
         self.lightDomeintensLabel.editingFinished.connect(self.changeLightDomeItensFromQline)
         self.lightDomeIntensSlider.valueChanged.connect(self.changeLightDomeItensFromSlider)
-        self.lightDomeRotateLabel.editingFinished.connect(self.changeLightDomerotateFromQline)
-        self.lightDomeRotateSlider.valueChanged.connect(self.changeLightDomerotateFromSlider)
+        self.lightDomeRotateLabel.editingFinished.connect(self.changeLightDomeRotateFromQline)
+        self.lightDomeRotateSlider.valueChanged.connect(self.changeLightDomeRotateFromSlider)
         self.toggleColorPaletteButton.clicked.connect(self.toggleColorPalette)
         self.createTurnButton.clicked.connect(self.createTurn)
         self.storePrefsButton.clicked.connect(self.storePrefs)
         self.importPrefsButton.clicked.connect(self.importPrefs)
         self.clearSceneButton.clicked.connect(self.clearScene)
 
-    def createComboBox(self):
-        """
-        Creates a combo box with all colorSpaces available from Maya.
-        """
+    def createComboBox(self) -> None:
+        """Creates a combo box with all colorSpaces available from Maya."""
         # comboBox
         self.colorSpaceMenu = QtWidgets.QComboBox()
         [self.colorSpaceMenu.addItem(colorSpace) for colorSpace in constants.COLORSPACE_LIST]
 
-    def setRenderEngine(self):
+    def setRenderEngine(self) -> None:
+        """This method sets the needed attributes depending on the chosen render engine."""
         self.basePath = os.path.dirname(os.path.abspath(__file__))
         # Set witch module is used to send commands
         if self.renderEngineCombo.currentText() == 'VRay':
@@ -316,53 +312,42 @@ class MainUi(QtWidgets.QDialog):
 
         self.groundClass = self.renderEngine.GroundClass(self.ground_1_path, self.ground_2_path, self.ground_3_path, self.color_checker_path)
 
-    def sendToCreateCam(self):
+    def sendToCreateCam(self) -> None:
+        """Triggers create cam function with the render engine color checker path"""
         self.renderEngine.createCam(self.color_checker_path)
 
-    def resetRotateCamSlider(self):
-        """
-        Reset the cam slider when cam is created
-        """
+    def resetRotateCamSlider(self) -> None:
+        """Reset the cam slider when cam is created"""
         self.rotateCamLabel.setText('0')
         self.rotateCamSlider.setValue(0)
 
-    def changeColorSpace(self):
-        """
-        Send change color space to Core
-        """
+    def changeColorSpace(self) -> None:
+        """Send change color space to Core"""
 #       # change Maya's color space in Core
         lookdev_core.changeColorSpace(self.colorSpaceMenu.currentText())
 
     @staticmethod
-    def openBrowser():
-        """
-        open the browser to set another path to ground 1, 2, 3, colorChecker and prefs
-        """
+    def openBrowser() -> None:
+        """open the browser to set another path to ground 1, 2, 3, colorChecker and prefs"""
         groundDirectory = cmds.fileDialog2(fileFilter='*', fileMode=3, dialogStyle=2)
 
         constants.PREFERENCE_PATH = groundDirectory[0] + '/Preferences.txt'
         constants.LIGHT_DOME_PATH = groundDirectory[0] + '/'
 
-    def updateRotateCamValueFromSlider(self):
-        """
-        changes the rotateCam label when slider is moved
-        """
+    def updateRotateCamValueFromSlider(self) -> None:
+        """changes the rotateCam label when slider is moved"""
         # change rotateCam label value
         self.rotateCamLabel.setText(str(self.rotateCamSlider.value())[:6])
 
         # send rotateCam value to rotateCam in Core
         self.renderEngine.rotateCam(self.rotateCamSlider.value())
 
-    def changeRotateCamValueFromQline(self):
-        """
-        Changes rotateCam label's value from slider
-        """
+    def changeRotateCamValueFromQline(self) -> None:
+        """Changes rotateCam label's value from slider"""
         self.rotateCamSlider.setValue(float(self.rotateCamLabel.text()))
 
-    def setThreePointsLights(self):
-        """
-        Send createLight to Core and reset sliders and lineedits
-        """
+    def setThreePointsLights(self) -> None:
+        """Send createLight to Core and reset sliders and lineEdits"""
         # send setThreePointsLight to Core
         self.renderEngine.setThreePointsLights()
 
@@ -387,71 +372,51 @@ class MainUi(QtWidgets.QDialog):
             self.backLightSlider.setValue(10)
             self.backLightLabel.setText('10')
 
-    def rotateLightFromSlider(self):
-        """
-        changes the rotateLight label when slider is moved and send it to Core
-        """
+    def rotateLightFromSlider(self) -> None:
+        """changes the rotateLight label when slider is moved and send it to Core"""
         # change rotateCam label value
         self.rotateLightLabel.setText(str(self.rotateLightSlider.value())[:6])
 
         # send to Core
         self.renderEngine.rotLights(self.rotateLightSlider.value())
 
-    def changeRotateLightLabelFromQline(self):
-        """
-        Changes rotateLight label's value from slider
-        """
+    def changeRotateLightLabelFromQline(self) -> None:
+        """Changes rotateLight label's value from slider"""
         self.rotateLightSlider.setValue(float(self.rotateLightLabel.text()))
 
-    def setGround(self):
-        """
-        Send setGround to Core
-        """
+    def setGround(self) -> None:
+        """Send setGround to Core"""
         self.groundClass.setGround(self.setGroundMenu.currentIndex())
 
-    def changeFillLightLabelFromSlider(self):
-        """
-        Changes Fill light label from slider's value and send it to Core
-        """
+    def changeFillLightLabelFromSlider(self) -> None:
+        """Changes Fill light label from slider's value and send it to Core"""
         self.fillLightLabel.setText(str(self.fillLightSlider.value())[:6])
         self.renderEngine.changeLightIntensity(self.fillLight, float(self.fillLightSlider.value()))
 
-    def changeFillLightSliderFromQline(self):
-        """
-        Changes Fill light slider from label's value
-        """
+    def changeFillLightSliderFromQline(self) -> None:
+        """Changes Fill light slider from label's value"""
         self.fillLightSlider.setValue(float(self.fillLightLabel.text()))
 
-    def changeKeyLightFromQline(self):
-        """
-        Changes key light label from slider's value
-        """
+    def changeKeyLightFromQline(self) -> None:
+        """Changes key light label from slider's value"""
         self.keyLightSlider.setValue(float(self.keyLightLabel.text()))
 
-    def changeKeyLightLabelFromSlider(self):
-        """
-        Changes key light label from slider and send it to Core
-        """
+    def changeKeyLightLabelFromSlider(self) -> None:
+        """Changes key light label from slider and send it to Core"""
         self.keyLightLabel.setText(str(self.keyLightSlider.value())[:6])
         self.renderEngine.changeLightIntensity(self.keyLight, float(self.keyLightLabel.text()))
 
-    def changeBackLightFromQline(self):
-        """
-        Changes back light slider from Qline'text
-        """
+    def changeBackLightFromQline(self) -> None:
+        """Changes back light slider from Qline'text"""
         self.backLightSlider.setValue(float(self.backLightLabel.text()))
 
-    def changeBackLightFromSlider(self):
-        """
-        Changes back light label from slider and send it to Core
-        """
+    def changeBackLightFromSlider(self) -> None:
+        """Changes back light label from slider and send it to Core"""
         self.backLightLabel.setText(str(self.backLightSlider.value()))
         self.renderEngine.changeLightIntensity(self.backLight, float(self.backLightLabel.text()))
 
-    def enableAllLights(self):
-        """
-        Enable all lights when create light button is pressed
-        """
+    def enableAllLights(self) -> None:
+        """Enable all lights when create light button is pressed"""
         # fillLight
         if not lookdev_core.queryExists('Lights_Grp'):
             self.fillLightCheckBox.setChecked(False)
@@ -473,28 +438,20 @@ class MainUi(QtWidgets.QDialog):
         else:
             self.backLightCheckBox.setChecked(True)
 
-    def enableFillLight(self):
-        """
-        Send fill light enable to Core
-        """
+    def enableFillLight(self) ->None:
+        """Send fill light enable to Core"""
         self.renderEngine.disableLight(self.fillLight, self.fillLightCheckBox.isChecked())
 
-    def enableKeyLight(self):
-        """
-        Send key light enable to Core
-        """
+    def enableKeyLight(self) ->None:
+        """Send key light enable to Core"""
         self.renderEngine.disableLight(self.keyLight, self.keyLightCheckBox.isChecked())
 
-    def enableBackLight(self):
-        """
-        Send back light enable to Core
-        """
+    def enableBackLight(self) ->None:
+        """Send back light enable to Core"""
         self.renderEngine.disableLight(self.backLight, self.backLightCheckBox.isChecked())
 
-    def setHdri(self):
-        """
-        send set hdri with name to Core
-        """
+    def setHdri(self) ->None:
+        """send set hdri with name to Core"""
         self.lightDomeClass.setLightDome(self.setHdriMenu.currentText())
 
         # if HDRI exists, set lightDome's slider and Qline to 1
@@ -510,49 +467,35 @@ class MainUi(QtWidgets.QDialog):
             self.lightDomeIntensSlider.setValue(1)
             self.lightDomeintensLabel.setText('1')
 
-    def changeLightDomeItensFromQline(self):
-        """
-        Changes lightDome slider from Qline's text
-        """
+    def changeLightDomeItensFromQline(self) ->None:
+        """Changes lightDome slider from Qline's text"""
         self.lightDomeIntensSlider.setValue(float(self.lightDomeintensLabel.text()))
 
-    def changeLightDomeItensFromSlider(self):
-        """
-        Changes lightDome label from slider and send it to Core
-        """
+    def changeLightDomeItensFromSlider(self) ->None:
+        """Changes lightDome label from slider and send it to Core"""
         self.lightDomeintensLabel.setText(str(self.lightDomeIntensSlider.value()))
         self.lightDomeClass.changeDome1Intens(float(self.lightDomeintensLabel.text()))
 
-    def changeLightDomerotateFromQline(self):
-        """
-        Changes lightDome rotate slider from Qline's text
-        """
+    def changeLightDomeRotateFromQline(self) ->None:
+        """Changes lightDome rotate slider from Qline's text"""
         self.lightDomeRotateSlider.setValue(float(self.lightDomeRotateLabel.text()))
 
-    def changeLightDomerotateFromSlider(self):
-        """
-        Changes lightDome rotate label from slider and send it to Core
-        """
+    def changeLightDomeRotateFromSlider(self) ->None:
+        """Changes lightDome rotate label from slider and send it to Core"""
         self.lightDomeRotateLabel.setText(str(self.lightDomeRotateSlider.value()))
         self.lightDomeClass.rotateDome(float(self.lightDomeRotateLabel.text()))
 
     @staticmethod
-    def toggleColorPalette():
-        """
-        Send hide color palette to Core
-        """
+    def toggleColorPalette() -> None:
+        """Send hide color palette to Core"""
         lookdev_core.toggleColorPalette()
 
-    def createTurn(self):
-        """
-        Send createTurn to Core with numbers of frames in argument
-        """
+    def createTurn(self) -> None:
+        """Send createTurn to Core with numbers of frames in argument"""
         lookdev_core.createTurn(int(self.turnTableFrameLabel.text()))
 
-    def storePrefs(self):
-        """
-        Send store prefs to Core with light dictionnary in argument
-        """
+    def storePrefs(self) -> None:
+        """Send store prefs to Core with light dictionary in argument"""
         # lights coordinates and intensity
         # add checkboxes values
 
@@ -562,10 +505,8 @@ class MainUi(QtWidgets.QDialog):
 
         self.renderEngine.storePrefs()
 
-    def importPrefs(self):
-        """
-        Send import pref to Core with preference's path in argument and set the sliders
-        """
+    def importPrefs(self) -> None:
+        """Send import pref to Core with preference's path in argument and set the sliders"""
         with open(constants.PREFERENCE_PATH, 'r') as oFile:
             fileReaded = json.load(oFile)
 
@@ -583,9 +524,8 @@ class MainUi(QtWidgets.QDialog):
 
         self.renderEngine.importPrefs(constants.PREFERENCE_PATH)
 
-    def clearScene(self):
-        """
-        Send clear scene to Core and reset light's sliders and labels"""
+    def clearScene(self) -> None:
+        """Send clear scene to Core and reset light's sliders and labels"""
         self.renderEngine.clearScene(self.color_checker_path,
                                      self.ground_1_path,
                                      self.ground_2_path,

@@ -1,32 +1,38 @@
 from maya import cmds
 
 
-def createFileText(fileName):
+def createFileText(fileName: str) -> str:
     """
     Creates File node from texture file
-    :return: File node's name
+
+    Parameters:
+        fileName: The Node's name.
+
+    Returns:
+        File node's name
     """
     # create file node
     fileNode = cmds.createNode('file', name=fileName, skipSelect=True)
     return fileNode
 
 
-def changeColorSpace(colorSpace):
-    """
-    Change Maya's color space
-    :param colorSpace: ColorSpace combo box from Qmenu
+def changeColorSpace(colorSpace: str) -> None:
+    """Change Maya's color space
 
+    Parameters:
+         colorSpace: ColorSpace combo box from Qmenu
     """
     cmds.colorManagementPrefs(renderingSpaceName=colorSpace, edit=True)
 
 
-def createTurn(numberOfFrames):
-    """
-    Creates tunTable with X numbers of frames
+def createTurn(numberOfFrames: int) -> None:
+    """Creates tunTable with X numbers of frames
 
     The first half of number's frame is used to turn the camera's offset group, and the second half to turn the
     offset's group light.
-    :param numberOfFrames: Numbers of frame from QLineEdit
+
+    Parameters:
+         numberOfFrames: Numbers of frame from QLineEdit
     """
 
     if not cmds.objExists('Cam_Main_Grp') or not cmds.objExists('Lights_Grp'):
@@ -44,15 +50,18 @@ def createTurn(numberOfFrames):
         cmds.setKeyframe('Lights_Grp', attribute='rotateY', time=float(numberOfFrames), value=360, inTangentType='linear', outTangentType='linear')
 
 
-def toggleColorPalette():
-    """
-    Hide the colorpalette, simple hide function from maya
-    """
+def toggleColorPalette() -> None:
+    """Hide the colorpalette, simple hide function from maya"""
     if not cmds.objExists('Cam_Main_Grp'):
         raise RuntimeError(' Camera not in scene ')
 
     cmds.setAttr('ColorPalette_ALL_Grp.visibility', not cmds.getAttr('ColorPalette_ALL_Grp.visibility'))
 
 
-def queryExists(item):
+def queryExists(item: str) -> str:
+    """Utility function to query if an object exists in the scene.
+
+    Parameters:
+        item: The object name to search.
+    """
     return cmds.objExists(item)
